@@ -115,6 +115,21 @@
             color: #333;
         }
 
+        .story-text .highlighted-answer {
+            background: #C41E3A;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .story-text .blank {
+            color: #C41E3A;
+            font-weight: bold;
+            text-decoration: underline;
+            text-decoration-style: dashed;
+        }
+
         .question-section {
             margin-bottom: 30px;
         }
@@ -362,110 +377,178 @@
     <script>
         const storyData = [
             {
-                story: "Chinese New Year is an important traditional Chinese holiday. It is",
+                before: "Chinese New Year is an important traditional Chinese holiday. It is",
+                blank: "also",
+                after: "known as the Spring Festival.",
                 question: "Choose the correct word:",
                 choices: ["also", "besides", "in addition"],
                 correct: 0,
-                explanation: "'Also' is the most common and natural choice here. It adds information in a simple way.",
-                fullSentence: "Chinese New Year is an important traditional Chinese holiday. It is also known as the Spring Festival."
+                explanation: "'Also' is the most common and natural choice here. It adds information in a simple way."
             },
             {
-                story: "According to legend, the holiday began",
+                before: "According to legend, the holiday began",
+                blank: "because",
+                after: "a terrible dragon attacked the same village every year.",
                 question: "Choose the correct word to show the reason:",
                 choices: ["consequently", "therefore", "because"],
                 correct: 2,
-                explanation: "'Because' introduces a reason or cause. It's followed by the reason (a terrible dragon attacked).",
-                fullSentence: "According to legend, the holiday began because a terrible dragon attacked the same village every year."
+                explanation: "'Because' introduces a reason or cause. It's followed by the reason (a terrible dragon attacked)."
             },
             {
-                story: "The dragon attacked every year and ate whatever it could find.",
+                before: "The dragon attacked every year and ate whatever it could find.",
+                blank: "At first",
+                after: ", one day, the dragon saw a small child wearing red and it ran away.",
                 question: "Choose the correct time expression:",
                 choices: ["At first", "Then", "After"],
                 correct: 0,
-                explanation: "'At first' shows the beginning of a sequence of events. It introduces what happened initially.",
-                fullSentence: "At first, one day, the dragon saw a small child wearing red and it ran away."
+                explanation: "'At first' shows the beginning of a sequence of events. It introduces what happened initially."
             },
             {
-                story: "The people understood that the dragon was afraid of the colour red,",
+                before: "The people understood that the dragon was afraid of the colour red,",
+                blank: "so",
+                after: "they started making beautiful red paper decorations.",
                 question: "Choose the correct word to show result or reason:",
                 choices: ["since", "so", "as"],
                 correct: 1,
-                explanation: "'So' shows result or consequence. The people understood something, SO they took action.",
-                fullSentence: "The people understood that the dragon was afraid of the colour red, so they started making beautiful red paper decorations."
+                explanation: "'So' shows result or consequence. The people understood something, SO they took action."
             },
             {
-                story: "They made",
+                before: "They made",
+                blank: "beautiful, red paper",
+                after: "decorations to prevent the dragon from coming back.",
                 question: "Choose the correct description:",
                 choices: ["beautiful, red paper", "paper, beautiful red", "beautiful, paper red"],
                 correct: 0,
-                explanation: "In English, adjectives go before nouns in this order: opinion (beautiful) + color (red) + noun (paper).",
-                fullSentence: "They made beautiful, red paper decorations to prevent the dragon from coming back."
+                explanation: "In English, adjectives go before nouns in this order: opinion (beautiful) + color (red) + noun (paper)."
             },
             {
-                story: "Before the holiday, the Chinese clean their homes",
+                before: "Before the holiday, the Chinese clean their homes",
+                blank: "carefully",
+                after: ".",
                 question: "Choose the correct word:",
                 choices: ["really", "fairly", "carefully"],
                 correct: 2,
-                explanation: "'Carefully' means with attention and care. It fits the meaning of cleaning thoroughly.",
-                fullSentence: "Before the holiday, the Chinese clean their homes carefully."
+                explanation: "'Carefully' means with attention and care. It fits the meaning of cleaning thoroughly."
             },
             {
-                story: "They are cleaning away last year's bad luck",
+                before: "They are cleaning away last year's bad luck",
+                blank: "in order to",
+                after: "the new year's good luck can come into their homes.",
                 question: "Choose the correct phrase to show purpose:",
                 choices: ["so that", "to", "in order to"],
                 correct: 2,
-                explanation: "'In order to' clearly shows purpose or intention. It's more formal than 'to' alone.",
-                fullSentence: "They are cleaning away last year's bad luck in order to the new year's good luck can come into their homes."
+                explanation: "'In order to' clearly shows purpose or intention. It's more formal than 'to' alone."
             },
             {
-                story: "Another tradition is fireworks.",
+                before: "Another tradition is fireworks.",
+                blank: "On the other hand",
+                after: ", over the years many people have been seriously injured by the fireworks, so in some places they are not allowed today.",
                 question: "Choose the correct phrase to contrast:",
                 choices: ["On the other hand", "Although", "However"],
                 correct: 0,
-                explanation: "'On the other hand' introduces a contrasting point. It shows a different perspective or situation.",
-                fullSentence: "Another tradition is fireworks. On the other hand, over the years many people have been seriously injured by the fireworks, so in some places they are not allowed today."
+                explanation: "'On the other hand' introduces a contrasting point. It shows a different perspective or situation."
             }
         ];
 
         let currentQuestion = 0;
         let score = 0;
         let userChoices = [];
-        let storyParts = [];
         let studentName = '';
+
+        // Save game state
+        function saveGameState() {
+            const gameState = {
+                currentQuestion,
+                score,
+                userChoices,
+                studentName
+            };
+            localStorage.setItem('dragonStoryGameState', JSON.stringify(gameState));
+        }
+
+        // Load game state
+        function loadGameState() {
+            const savedState = localStorage.getItem('dragonStoryGameState');
+            if (savedState) {
+                const gameState = JSON.parse(savedState);
+                currentQuestion = gameState.currentQuestion || 0;
+                score = gameState.score || 0;
+                userChoices = gameState.userChoices || [];
+                studentName = gameState.studentName || '';
+                
+                // If there's a saved game, resume it
+                if (currentQuestion > 0 || userChoices.length > 0) {
+                    return true; // Indicate there's a saved game
+                }
+            }
+            return false;
+        }
+
+        // Clear saved state
+        function clearGameState() {
+            localStorage.removeItem('dragonStoryGameState');
+        }
 
         function startGame() {
             // Get and validate student name
-            studentName = document.getElementById('studentName').value.trim();
-            if (!studentName) {
+            const nameInput = document.getElementById('studentName').value.trim();
+            if (!nameInput) {
                 alert('Please enter your name before starting! 😊');
                 return;
             }
+            
+            studentName = nameInput;
             
             document.getElementById('startScreen').classList.add('hidden');
             document.getElementById('gameScreen').classList.remove('hidden');
             currentQuestion = 0;
             score = 0;
             userChoices = [];
-            storyParts = [];
+            
+            saveGameState();
+            loadQuestion();
+        }
+
+        function resumeGame() {
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('hidden');
+            
+            // Update score display
+            document.getElementById('scoreDisplay').textContent = `Score: ${score}/${storyData.length} ⭐`;
+            
             loadQuestion();
         }
 
         function loadQuestion() {
+            if (currentQuestion >= storyData.length) {
+                showFinalStory();
+                return;
+            }
+
             const data = storyData[currentQuestion];
             const progress = ((currentQuestion + 1) / storyData.length) * 100;
             
             document.getElementById('progressFill').style.width = progress + '%';
             document.getElementById('progressFill').textContent = Math.round(progress) + '%';
             
-            // Build story so far
-            let fullStory = storyParts.join(' ');
-            if (fullStory) {
-                fullStory += ' ' + data.story;
-            } else {
-                fullStory = data.story;
+            // Build story display with previous answers highlighted
+            let storyHTML = '';
+            
+            for (let i = 0; i < currentQuestion; i++) {
+                const prevData = storyData[i];
+                const userChoice = userChoices[i];
+                
+                storyHTML += prevData.before + ' ';
+                storyHTML += `<span class="highlighted-answer">${userChoice.selected}</span> `;
+                storyHTML += prevData.after + ' ';
             }
             
-            document.getElementById('storyText').innerHTML = fullStory + ' <strong style="color: #C41E3A;">___</strong>';
+            // Add current question with full context
+            storyHTML += data.before + ' ';
+            storyHTML += '<span class="blank">_____</span> ';
+            storyHTML += data.after;
+            
+            document.getElementById('storyText').innerHTML = storyHTML;
             document.getElementById('questionText').textContent = data.question;
             
             // Create choices
@@ -482,6 +565,8 @@
             
             document.getElementById('feedback').classList.remove('show');
             document.getElementById('nextBtn').classList.remove('show');
+            
+            saveGameState();
         }
 
         function selectAnswer(selected) {
@@ -507,20 +592,17 @@
                 score++;
                 feedbackTitle.textContent = '✅ Excellent!';
                 feedbackTitle.style.color = '#4CAF50';
-                // Play success sound
                 playSound('success');
             } else {
                 feedbackTitle.textContent = '❌ Not quite right';
                 feedbackTitle.style.color = '#f44336';
-                // Play error sound
                 playSound('error');
             }
             
             feedbackText.textContent = data.explanation;
             feedback.classList.add('show');
             
-            // Store the complete sentence
-            storyParts.push(data.fullSentence);
+            // Store user choice
             userChoices.push({
                 question: currentQuestion + 1,
                 selected: data.choices[selected],
@@ -533,6 +615,8 @@
             
             // Show next button
             document.getElementById('nextBtn').classList.add('show');
+            
+            saveGameState();
         }
 
         function nextQuestion() {
@@ -549,9 +633,20 @@
             document.getElementById('gameScreen').classList.add('hidden');
             document.getElementById('endScreen').classList.remove('hidden');
             
+            // Build complete story with highlighted answers
+            let completeStory = '';
+            for (let i = 0; i < storyData.length; i++) {
+                const data = storyData[i];
+                const userChoice = userChoices[i];
+                
+                completeStory += data.before + ' ';
+                completeStory += `<span class="highlighted-answer">${userChoice.selected}</span> `;
+                completeStory += data.after + ' ';
+            }
+            
             // Display complete story
             const finalStory = document.getElementById('finalStory');
-            finalStory.innerHTML = '<h2>🎉 Your Complete Story! 🎉</h2>' + storyParts.join(' ');
+            finalStory.innerHTML = '<h2>🎉 Your Complete Story! 🎉</h2>' + completeStory;
             
             // Display score
             const percentage = Math.round((score / storyData.length) * 100);
@@ -571,16 +666,20 @@
             
             document.getElementById('finalScore').innerHTML = 
                 `${emoji} ${score}/${storyData.length} Correct (${percentage}%)<br><small style="font-size: 0.5em;">${message}</small>`;
+            
+            // Clear saved state when game is complete
+            clearGameState();
         }
 
         function restartGame() {
+            clearGameState();
             document.getElementById('endScreen').classList.add('hidden');
             document.getElementById('startScreen').classList.remove('hidden');
+            document.getElementById('studentName').value = '';
         }
 
         function playSound(type) {
             try {
-                // Create audio context
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
                 const audioContext = new AudioContext();
                 
@@ -591,24 +690,22 @@
                 gainNode.connect(audioContext.destination);
                 
                 if (type === 'success') {
-                    // Success sound: cheerful ascending notes
                     oscillator.type = 'sine';
-                    oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
+                    oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime);
                     gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
                     
                     setTimeout(() => {
-                        oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime); // E5
+                        oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime);
                     }, 100);
                     
                     setTimeout(() => {
-                        oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime); // G5
+                        oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime);
                     }, 200);
                     
                     gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
                     oscillator.start(audioContext.currentTime);
                     oscillator.stop(audioContext.currentTime + 0.5);
                 } else if (type === 'error') {
-                    // Error sound: buzzer
                     oscillator.type = 'sawtooth';
                     oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
                     gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
@@ -622,13 +719,18 @@
         }
 
         function sendResults() {
-            // YOU NEED TO REPLACE THIS URL WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
             const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzjpYMyXcyXgrmnBkIiOTRExfiEYU9SD4md7Oa-TMDMVTAYj90qNdn1ZwE6zWMSwzpG/exec';
             
-            const story = storyParts.join(' ');
+            // Build complete story
+            let story = '';
+            for (let i = 0; i < storyData.length; i++) {
+                const data = storyData[i];
+                const userChoice = userChoices[i];
+                story += data.before + ' ' + userChoice.selected + ' ' + data.after + ' ';
+            }
+            
             const percentage = Math.round((score / storyData.length) * 100);
             
-            // Prepare detailed results for each question
             const detailedAnswers = userChoices.map(choice => ({
                 question: choice.question,
                 studentAnswer: choice.selected,
@@ -636,7 +738,6 @@
                 isCorrect: choice.isCorrect
             }));
             
-            // Prepare data to send
             const data = {
                 timestamp: new Date().toLocaleString(),
                 studentName: studentName,
@@ -647,12 +748,10 @@
                 answers: detailedAnswers
             };
             
-            // Show loading message
             const sendButton = event.target;
             sendButton.disabled = true;
             sendButton.textContent = 'Sending... ⏳';
             
-            // Send to Google Sheets
             fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
                 mode: 'no-cors',
@@ -662,19 +761,33 @@
                 body: JSON.stringify(data)
             })
             .then(() => {
-                // Success - no-cors mode doesn't return response
                 alert(`✅ Results sent successfully!\n\nThank you, ${studentName}!\n\nYour score: ${score}/${storyData.length} (${percentage}%)`);
                 sendButton.textContent = '✓ Results Sent!';
                 sendButton.style.background = '#4CAF50';
             })
             .catch(error => {
-                // Error handling
                 console.error('Error:', error);
                 alert('❌ There was a problem sending your results. Please tell your teacher.');
                 sendButton.disabled = false;
                 sendButton.textContent = 'Send Results 📧';
             });
         }
+
+        // Check for saved game on page load
+        window.addEventListener('load', () => {
+            if (loadGameState() && studentName) {
+                const resume = confirm(`Welcome back, ${studentName}!\n\nYou have a saved game in progress (Question ${currentQuestion + 1}/${storyData.length}).\n\nWould you like to continue where you left off?`);
+                if (resume) {
+                    resumeGame();
+                } else {
+                    clearGameState();
+                    currentQuestion = 0;
+                    score = 0;
+                    userChoices = [];
+                    studentName = '';
+                }
+            }
+        });
     </script>
 </body>
 </html>
