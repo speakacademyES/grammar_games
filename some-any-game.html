@@ -83,10 +83,10 @@
             font-weight: 500;
         }
 
-        .drop-zone {
+        .sentence-area {
             min-height: 80px;
             background: #fff;
-            border: 3px dashed #ccc;
+            border: 3px solid #667eea;
             border-radius: 10px;
             padding: 15px;
             margin-bottom: 25px;
@@ -98,9 +98,14 @@
             transition: all 0.3s ease;
         }
 
-        .drop-zone.drag-over {
-            border-color: #667eea;
-            background: #f0f4ff;
+        .sentence-area.drag-over {
+            border-color: #11998e;
+            background: #f0fff0;
+        }
+
+        .sentence-area .placeholder {
+            color: #999;
+            font-style: italic;
         }
 
         .word-bank {
@@ -117,7 +122,7 @@
             color: white;
             padding: 12px 20px;
             border-radius: 8px;
-            cursor: move;
+            cursor: pointer;
             user-select: none;
             font-weight: 500;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -128,6 +133,10 @@
         .word:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .word:active {
+            transform: scale(0.95);
         }
 
         .word.dragging {
@@ -254,7 +263,7 @@
         <div class="header">
             <h1>🎮 Some & Any Sentence Builder</h1>
             <div class="instructions">
-                Drag the words to build a correct sentence using "some" or "any"
+                Click words to build a sentence using "some" or "any"
             </div>
         </div>
 
@@ -275,8 +284,8 @@
 
         <div class="prompt" id="prompt"></div>
 
-        <div class="drop-zone" id="drop-zone">
-            <span style="color: #999; font-style: italic;">Drag words here...</span>
+        <div class="sentence-area" id="sentence-area">
+            <span class="placeholder">Click words below to build your sentence...</span>
         </div>
 
         <div class="word-bank" id="word-bank"></div>
@@ -310,10 +319,9 @@
             
             switch(type) {
                 case 'correct':
-                    // Happy ascending notes
-                    oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
-                    oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1); // E5
-                    oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2); // G5
+                    oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime);
+                    oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1);
+                    oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2);
                     gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
                     gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
                     oscillator.start(audioContext.currentTime);
@@ -321,9 +329,8 @@
                     break;
                     
                 case 'incorrect':
-                    // Descending notes
-                    oscillator.frequency.setValueAtTime(392.00, audioContext.currentTime); // G4
-                    oscillator.frequency.setValueAtTime(293.66, audioContext.currentTime + 0.15); // D4
+                    oscillator.frequency.setValueAtTime(392.00, audioContext.currentTime);
+                    oscillator.frequency.setValueAtTime(293.66, audioContext.currentTime + 0.15);
                     oscillator.type = 'triangle';
                     gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
                     gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
@@ -331,18 +338,7 @@
                     oscillator.stop(audioContext.currentTime + 0.3);
                     break;
                     
-                case 'drop':
-                    // Short pop sound
-                    oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
-                    oscillator.type = 'sine';
-                    gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-                    oscillator.start(audioContext.currentTime);
-                    oscillator.stop(audioContext.currentTime + 0.1);
-                    break;
-                    
-                case 'pickup':
-                    // Quick ascending blip
+                case 'add':
                     oscillator.frequency.setValueAtTime(300, audioContext.currentTime);
                     oscillator.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.05);
                     oscillator.type = 'sine';
@@ -352,9 +348,17 @@
                     oscillator.stop(audioContext.currentTime + 0.05);
                     break;
                     
+                case 'remove':
+                    oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+                    oscillator.type = 'sine';
+                    gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.1);
+                    break;
+                    
                 case 'complete':
-                    // Victory fanfare
-                    const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+                    const notes = [523.25, 659.25, 783.99, 1046.50];
                     notes.forEach((freq, i) => {
                         const osc = audioContext.createOscillator();
                         const gain = audioContext.createGain();
@@ -366,7 +370,7 @@
                         osc.start(audioContext.currentTime + (i * 0.15));
                         osc.stop(audioContext.currentTime + (i * 0.15) + 0.3);
                     });
-                    return; // Don't start the main oscillator
+                    return;
             }
         }
 
@@ -498,6 +502,38 @@
         let streak = 0;
         let currentSentence = [];
 
+        // Save game state to localStorage
+        function saveGameState() {
+            const gameState = {
+                currentQuestion,
+                correctAnswers,
+                streak,
+                currentSentence
+            };
+            localStorage.setItem('someAnyGameState', JSON.stringify(gameState));
+        }
+
+        // Load game state from localStorage
+        function loadGameState() {
+            const savedState = localStorage.getItem('someAnyGameState');
+            if (savedState) {
+                const gameState = JSON.parse(savedState);
+                currentQuestion = gameState.currentQuestion || 0;
+                correctAnswers = gameState.correctAnswers || 0;
+                streak = gameState.streak || 0;
+                currentSentence = gameState.currentSentence || [];
+                
+                // Update score display
+                document.getElementById('correct-score').textContent = correctAnswers;
+                document.getElementById('streak').textContent = streak;
+            }
+        }
+
+        // Clear saved game state
+        function clearGameState() {
+            localStorage.removeItem('someAnyGameState');
+        }
+
         function loadQuestion() {
             const exercise = exercises[currentQuestion];
             document.getElementById('prompt').textContent = exercise.prompt;
@@ -506,120 +542,139 @@
             const wordBank = document.getElementById('word-bank');
             wordBank.innerHTML = '';
             
-            // Shuffle words
-            const shuffled = [...exercise.words].sort(() => Math.random() - 0.5);
+            // Determine which words to show in the word bank
+            // If currentSentence is empty, show all words shuffled
+            // If currentSentence has words (restored from save), only show remaining words
+            let availableWords;
+            if (currentSentence.length === 0) {
+                // New question - shuffle all words
+                availableWords = [...exercise.words].sort(() => Math.random() - 0.5);
+            } else {
+                // Restored state - show only words not in sentence
+                availableWords = [];
+                const sentenceCopy = [...currentSentence];
+                
+                exercise.words.forEach(word => {
+                    const indexInSentence = sentenceCopy.indexOf(word);
+                    if (indexInSentence === -1) {
+                        // Word not in sentence, add to available words
+                        availableWords.push(word);
+                    } else {
+                        // Word is in sentence, remove one instance from the copy
+                        sentenceCopy.splice(indexInSentence, 1);
+                    }
+                });
+            }
             
-            shuffled.forEach(word => {
+            availableWords.forEach(word => {
                 const wordElement = document.createElement('div');
                 wordElement.className = 'word';
                 wordElement.textContent = word;
-                wordElement.draggable = true;
-                wordElement.addEventListener('dragstart', handleDragStart);
-                wordElement.addEventListener('dragend', handleDragEnd);
+                wordElement.onclick = () => addWordToSentence(word);
                 wordBank.appendChild(wordElement);
             });
 
-            currentSentence = [];
-            updateDropZone();
+            updateSentenceArea();
             document.getElementById('feedback').style.display = 'none';
             document.getElementById('next-btn').style.display = 'none';
+            
+            // Save state after loading question
+            saveGameState();
         }
 
+        function addWordToSentence(word) {
+            // Add word to sentence
+            currentSentence.push(word);
+            
+            // Remove word from word bank
+            const wordBank = document.getElementById('word-bank');
+            const wordElements = wordBank.querySelectorAll('.word');
+            for (let elem of wordElements) {
+                if (elem.textContent === word) {
+                    elem.remove();
+                    break;
+                }
+            }
+            
+            updateSentenceArea();
+            playSound('add');
+            
+            // Save state
+            saveGameState();
+        }
+
+        function removeWordFromSentence(word, index) {
+            // Remove word from sentence
+            currentSentence.splice(index, 1);
+            
+            // Add word back to word bank
+            const wordBank = document.getElementById('word-bank');
+            const wordElement = document.createElement('div');
+            wordElement.className = 'word';
+            wordElement.textContent = word;
+            wordElement.onclick = () => addWordToSentence(word);
+            wordBank.appendChild(wordElement);
+            
+            updateSentenceArea();
+            playSound('remove');
+            
+            // Save state
+            saveGameState();
+        }
+
+        function updateSentenceArea() {
+            const sentenceArea = document.getElementById('sentence-area');
+            sentenceArea.innerHTML = '';
+            
+            if (currentSentence.length === 0) {
+                const placeholder = document.createElement('span');
+                placeholder.className = 'placeholder';
+                placeholder.textContent = 'Click words below to build your sentence...';
+                sentenceArea.appendChild(placeholder);
+            } else {
+                currentSentence.forEach((word, index) => {
+                    const wordElement = document.createElement('div');
+                    wordElement.className = 'word in-sentence';
+                    wordElement.textContent = word;
+                    wordElement.draggable = true;
+                    
+                    // Track if this was a drag or a click
+                    let isDragging = false;
+                    
+                    wordElement.addEventListener('dragstart', (e) => {
+                        isDragging = true;
+                        handleDragStart(e);
+                    });
+                    
+                    wordElement.addEventListener('dragend', (e) => {
+                        handleDragEnd(e);
+                        // Reset after a short delay to allow click to check
+                        setTimeout(() => { isDragging = false; }, 100);
+                    });
+                    
+                    wordElement.onclick = () => {
+                        if (!isDragging) {
+                            removeWordFromSentence(word, index);
+                        }
+                    };
+                    
+                    sentenceArea.appendChild(wordElement);
+                });
+            }
+        }
+
+        // Drag event handlers
         function handleDragStart(e) {
             e.target.classList.add('dragging');
             e.dataTransfer.effectAllowed = 'move';
             e.dataTransfer.setData('text/plain', e.target.textContent);
-            playSound('pickup');
+            playSound('add');
         }
 
         function handleDragEnd(e) {
             e.target.classList.remove('dragging');
         }
 
-        const dropZone = document.getElementById('drop-zone');
-        
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('drag-over');
-            
-            const draggingElement = document.querySelector('.dragging');
-            if (!draggingElement) return;
-            
-            // Find the word element under the cursor
-            const afterElement = getDragAfterElement(dropZone, e.clientX);
-            
-            // Remove any existing drop indicator
-            const existingIndicator = dropZone.querySelector('.drop-indicator');
-            if (existingIndicator) {
-                existingIndicator.remove();
-            }
-            
-            // Add visual indicator where the word will be dropped
-            const indicator = document.createElement('div');
-            indicator.className = 'drop-indicator';
-            indicator.style.cssText = 'width: 3px; height: 40px; background: #667eea; border-radius: 2px; margin: 0 5px;';
-            
-            if (afterElement == null) {
-                dropZone.appendChild(indicator);
-            } else {
-                dropZone.insertBefore(indicator, afterElement);
-            }
-        });
-
-        dropZone.addEventListener('dragleave', (e) => {
-            // Only remove drag-over if we're actually leaving the drop zone
-            if (e.target === dropZone) {
-                dropZone.classList.remove('drag-over');
-                const indicator = dropZone.querySelector('.drop-indicator');
-                if (indicator) indicator.remove();
-            }
-        });
-
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('drag-over');
-            
-            const word = e.dataTransfer.getData('text/plain');
-            const draggingElement = document.querySelector('.dragging');
-            
-            // Remove drop indicator
-            const indicator = dropZone.querySelector('.drop-indicator');
-            if (indicator) indicator.remove();
-            
-            if (draggingElement) {
-                const afterElement = getDragAfterElement(dropZone, e.clientX);
-                
-                // Determine the index to insert at
-                let insertIndex;
-                if (afterElement == null) {
-                    insertIndex = currentSentence.length;
-                } else {
-                    const afterWord = afterElement.textContent;
-                    insertIndex = currentSentence.indexOf(afterWord);
-                }
-                
-                // If dragging from word bank, add to sentence
-                if (draggingElement.parentElement.id === 'word-bank') {
-                    currentSentence.splice(insertIndex, 0, word);
-                    draggingElement.remove();
-                } 
-                // If reordering within sentence
-                else if (draggingElement.classList.contains('in-sentence')) {
-                    const oldIndex = currentSentence.indexOf(word);
-                    currentSentence.splice(oldIndex, 1);
-                    
-                    // Adjust insert index if needed
-                    if (oldIndex < insertIndex) {
-                        insertIndex--;
-                    }
-                    currentSentence.splice(insertIndex, 0, word);
-                }
-                
-                updateDropZone();
-                playSound('drop');
-            }
-        });
-        
         function getDragAfterElement(container, x) {
             const draggableElements = [...container.querySelectorAll('.word.in-sentence:not(.dragging)')];
             
@@ -635,46 +690,87 @@
             }, { offset: Number.NEGATIVE_INFINITY }).element;
         }
 
-        function updateDropZone() {
-            dropZone.innerHTML = '';
+        // Set up drag and drop for sentence area
+        const sentenceArea = document.getElementById('sentence-area');
+        
+        sentenceArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            sentenceArea.classList.add('drag-over');
             
-            if (currentSentence.length === 0) {
-                const placeholder = document.createElement('span');
-                placeholder.style.color = '#999';
-                placeholder.style.fontStyle = 'italic';
-                placeholder.textContent = 'Drag words here...';
-                dropZone.appendChild(placeholder);
-            } else {
-                currentSentence.forEach((word, index) => {
-                    const wordElement = document.createElement('div');
-                    wordElement.className = 'word in-sentence';
-                    wordElement.textContent = word;
-                    wordElement.draggable = true;
-                    wordElement.onclick = () => removeWord(index);
-                    wordElement.addEventListener('dragstart', handleDragStart);
-                    wordElement.addEventListener('dragend', handleDragEnd);
-                    dropZone.appendChild(wordElement);
-                });
+            const draggingElement = document.querySelector('.dragging');
+            if (!draggingElement || !draggingElement.classList.contains('in-sentence')) return;
+            
+            const afterElement = getDragAfterElement(sentenceArea, e.clientX);
+            
+            // Remove any existing drop indicator
+            const existingIndicator = sentenceArea.querySelector('.drop-indicator');
+            if (existingIndicator) {
+                existingIndicator.remove();
             }
-        }
+            
+            // Add visual indicator
+            const indicator = document.createElement('div');
+            indicator.className = 'drop-indicator';
+            indicator.style.cssText = 'width: 3px; height: 40px; background: #11998e; border-radius: 2px; margin: 0 5px;';
+            
+            if (afterElement == null) {
+                sentenceArea.appendChild(indicator);
+            } else {
+                sentenceArea.insertBefore(indicator, afterElement);
+            }
+        });
 
-        function removeWord(index) {
-            const word = currentSentence[index];
-            currentSentence.splice(index, 1);
+        sentenceArea.addEventListener('dragleave', (e) => {
+            if (e.target === sentenceArea) {
+                sentenceArea.classList.remove('drag-over');
+                const indicator = sentenceArea.querySelector('.drop-indicator');
+                if (indicator) indicator.remove();
+            }
+        });
+
+        sentenceArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            sentenceArea.classList.remove('drag-over');
             
-            const wordElement = document.createElement('div');
-            wordElement.className = 'word';
-            wordElement.textContent = word;
-            wordElement.draggable = true;
-            wordElement.addEventListener('dragstart', handleDragStart);
-            wordElement.addEventListener('dragend', handleDragEnd);
-            document.getElementById('word-bank').appendChild(wordElement);
+            const word = e.dataTransfer.getData('text/plain');
+            const draggingElement = document.querySelector('.dragging');
             
-            updateDropZone();
-            playSound('pickup');
-        }
+            // Remove drop indicator
+            const indicator = sentenceArea.querySelector('.drop-indicator');
+            if (indicator) indicator.remove();
+            
+            if (draggingElement && draggingElement.classList.contains('in-sentence')) {
+                const afterElement = getDragAfterElement(sentenceArea, e.clientX);
+                
+                // Find current position
+                const oldIndex = currentSentence.indexOf(word);
+                
+                // Determine new position
+                let newIndex;
+                if (afterElement == null) {
+                    newIndex = currentSentence.length - 1;
+                } else {
+                    const afterWord = afterElement.textContent;
+                    newIndex = currentSentence.indexOf(afterWord);
+                }
+                
+                // Reorder the sentence array
+                currentSentence.splice(oldIndex, 1);
+                if (oldIndex < newIndex) {
+                    newIndex--;
+                }
+                currentSentence.splice(newIndex, 0, word);
+                
+                updateSentenceArea();
+                playSound('remove');
+                
+                // Save state after reordering
+                saveGameState();
+            }
+        });
 
         function resetSentence() {
+            currentSentence = [];
             loadQuestion();
         }
 
@@ -693,17 +789,24 @@
                 document.getElementById('correct-score').textContent = correctAnswers;
                 document.getElementById('streak').textContent = streak;
                 document.getElementById('next-btn').style.display = 'inline-block';
+                
+                // Save state
+                saveGameState();
             } else {
                 playSound('incorrect');
                 feedback.className = 'feedback incorrect';
                 feedback.textContent = `✗ Not quite. ${exercise.explanation} Try again!`;
                 streak = 0;
                 document.getElementById('streak').textContent = streak;
+                
+                // Save state
+                saveGameState();
             }
         }
 
         function nextQuestion() {
             currentQuestion++;
+            currentSentence = []; // Reset sentence for new question
             
             if (currentQuestion >= exercises.length) {
                 showCompletion();
@@ -714,8 +817,12 @@
 
         function showCompletion() {
             playSound('complete');
+            
+            // Clear saved state since game is complete
+            clearGameState();
+            
             document.querySelector('.prompt').style.display = 'none';
-            document.querySelector('.drop-zone').style.display = 'none';
+            document.querySelector('.sentence-area').style.display = 'none';
             document.querySelector('.word-bank').style.display = 'none';
             document.querySelector('.buttons').style.display = 'none';
             document.querySelector('.feedback').style.display = 'none';
@@ -734,8 +841,11 @@
             document.getElementById('correct-score').textContent = '0';
             document.getElementById('streak').textContent = '0';
             
+            // Clear saved state
+            clearGameState();
+            
             document.querySelector('.prompt').style.display = 'block';
-            document.querySelector('.drop-zone').style.display = 'flex';
+            document.querySelector('.sentence-area').style.display = 'flex';
             document.querySelector('.word-bank').style.display = 'flex';
             document.querySelector('.buttons').style.display = 'flex';
             document.getElementById('completion').style.display = 'none';
@@ -743,7 +853,8 @@
             loadQuestion();
         }
 
-        // Initialize the first question
+        // Load saved state and initialize the first question
+        loadGameState();
         loadQuestion();
     </script>
 </body>
