@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anagram Game | Speak Academy</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --black: #1a1a1a;
+            --orange: #ff6b35;
+            --orange-dark: #e55a2b;
+            --orange-light: #ff8c5a;
+            --white: #ffffff;
+            --gray-light: #f5f5f5;
+            --gray: #e0e0e0;
+            --gray-dark: #888;
+            --success: #4caf50;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            --shadow-hover: 0 8px 30px rgba(255, 107, 53, 0.3);
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--black);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: var(--white);
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--orange);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .game-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--white);
+            text-shadow: 2px 2px 0 var(--orange);
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            background: var(--white);
+            color: var(--black);
+            padding: 12px 24px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            box-shadow: var(--shadow);
+        }
+
+        .stat-icon {
+            font-size: 1.2rem;
+        }
+
+        .stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--orange);
+            font-size: 1.1rem;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 30px;
+        }
+
+        .progress-bar {
+            height: 12px;
+            background: var(--gray);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--orange), var(--orange-light));
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+
+        .progress-text {
+            text-align: center;
+            margin-top: 8px;
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+
+        /* Game Container */
+        .game-container {
+            background: var(--white);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .instruction {
+            color: var(--gray-dark);
+            margin-bottom: 20px;
+            font-size: 1rem;
+        }
+
+        /* Drop Zone - where letters go */
+        .drop-zone {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 40px;
+            min-height: 80px;
+            padding: 20px;
+            background: var(--gray-light);
+            border-radius: 16px;
+            border: 3px dashed var(--gray);
+            transition: all 0.3s ease;
+        }
+
+        .drop-zone.drag-over {
+            border-color: var(--orange);
+            background: rgba(255, 107, 53, 0.1);
+        }
+
+        .letter-slot {
+            width: 50px;
+            height: 60px;
+            background: var(--white);
+            border: 3px solid var(--gray);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--black);
+            transition: all 0.2s ease;
+        }
+
+        .letter-slot.filled {
+            border-color: var(--orange);
+            background: var(--orange);
+            color: var(--white);
+            transform: scale(1.05);
+        }
+
+        .letter-slot.correct {
+            border-color: var(--success);
+            background: var(--success);
+            color: var(--white);
+            animation: correctPulse 0.5s ease;
+        }
+
+        .letter-slot.space {
+            background: transparent;
+            border: none;
+            width: 30px;
+        }
+
+        @keyframes correctPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Scrambled Letters */
+        .letter-bank {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            min-height: 70px;
+        }
+
+        .letter-tile {
+            width: 50px;
+            height: 60px;
+            background: var(--black);
+            color: var(--white);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.8rem;
+            font-weight: 700;
+            cursor: grab;
+            user-select: none;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow);
+        }
+
+        .letter-tile:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: var(--shadow-hover);
+            background: var(--orange-dark);
+        }
+
+        .letter-tile:active {
+            cursor: grabbing;
+            transform: scale(1.1);
+        }
+
+        .letter-tile.dragging {
+            opacity: 0.5;
+            transform: scale(0.9);
+        }
+
+        .letter-tile.used {
+            opacity: 0.3;
+            pointer-events: none;
+            transform: scale(0.9);
+        }
+
+        /* Buttons */
+        .btn-container {
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: var(--orange);
+            color: var(--white);
+            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
+        }
+
+        .btn-primary:hover {
+            background: var(--orange-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 53, 0.5);
+        }
+
+        .btn-secondary {
+            background: var(--gray-light);
+            color: var(--black);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray);
+            transform: translateY(-2px);
+        }
+
+        /* Success Message */
+        .success-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .success-overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .success-modal {
+            background: var(--white);
+            padding: 50px;
+            border-radius: 24px;
+            text-align: center;
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+            max-width: 400px;
+        }
+
+        .success-overlay.show .success-modal {
+            transform: scale(1);
+        }
+
+        .success-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .success-title {
+            font-size: 2rem;
+            color: var(--black);
+            margin-bottom: 10px;
+        }
+
+        .success-word {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            color: var(--orange);
+            margin-bottom: 20px;
+        }
+
+        /* Game Complete */
+        .complete-container {
+            display: none;
+        }
+
+        .complete-container.show {
+            display: block;
+        }
+
+        .final-score {
+            font-size: 4rem;
+            color: var(--orange);
+            font-weight: 700;
+            margin: 20px 0;
+        }
+
+        .final-stats {
+            color: var(--gray-dark);
+            margin-bottom: 30px;
+        }
+
+        /* Sound Toggle */
+        .sound-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--white);
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .sound-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .game-title {
+                font-size: 1.8rem;
+            }
+
+            .game-container {
+                padding: 25px;
+            }
+
+            .letter-slot, .letter-tile {
+                width: 42px;
+                height: 52px;
+                font-size: 1.5rem;
+            }
+
+            .stats-bar {
+                gap: 15px;
+            }
+
+            .stat {
+                padding: 10px 18px;
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Animations */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .shake {
+            animation: shake 0.4s ease;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .bounce {
+            animation: bounce 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <button class="sound-toggle" id="soundToggle" title="Toggle Sound">🔊</button>
+
+    <header class="header">
+        <div class="logo">Speak Academy</div>
+        <h1 class="game-title">Anagram Challenge</h1>
+    </header>
+
+    <div class="stats-bar">
+        <div class="stat">
+            <span class="stat-icon">⭐</span>
+            <span>Score:</span>
+            <span class="stat-value" id="score">0</span>
+        </div>
+        <div class="stat">
+            <span class="stat-icon">🎯</span>
+            <span>Streak:</span>
+            <span class="stat-value" id="streak">0</span>
+        </div>
+        <div class="stat">
+            <span class="stat-icon">⏱️</span>
+            <span>Time:</span>
+            <span class="stat-value" id="timer">0:00</span>
+        </div>
+    </div>
+
+    <div class="progress-container">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-text" id="progressText">Word 1 of 27</div>
+    </div>
+
+    <main class="game-container" id="gameContainer">
+        <p class="instruction">Drag the letters into the correct order</p>
+        
+        <div class="drop-zone" id="dropZone"></div>
+        
+        <div class="letter-bank" id="letterBank"></div>
+        
+        <div class="btn-container">
+            <button class="btn btn-secondary" id="resetBtn">↺ Reset</button>
+            <button class="btn btn-secondary" id="skipBtn">Skip →</button>
+            <button class="btn btn-primary" id="hintBtn">💡 Hint</button>
+        </div>
+    </main>
+
+    <!-- Game Complete Screen -->
+    <main class="game-container complete-container" id="completeContainer">
+        <div class="success-icon">🏆</div>
+        <h2 class="success-title">Game Complete!</h2>
+        <div class="final-score" id="finalScore">0</div>
+        <p class="final-stats" id="finalStats">You completed all words!</p>
+        <div class="btn-container">
+            <button class="btn btn-primary" id="playAgainBtn">Play Again</button>
+        </div>
+    </main>
+
+    <!-- Success Overlay -->
+    <div class="success-overlay" id="successOverlay">
+        <div class="success-modal">
+            <div class="success-icon">🎉</div>
+            <h2 class="success-title">Correct!</h2>
+            <p class="success-word" id="successWord"></p>
+            <button class="btn btn-primary" id="nextWordBtn">Next Word →</button>
+        </div>
+    </div>
+
+    <script>
+        // Word list
+        const words = [
+            "tsunami", "heatwave", "volcanic", "eruption", "snowfall", 
+            "earthquake", "flood", "lightning", "hurricane", "avalanche", 
+            "thunderstorm", "sunny", "warm", "hot", "mild", "calm", "fine", 
+            "pleasant", "still", "foggy", "cold", "rainy", "snowy", "windy", 
+            "freezing", "icy", "humid"
+        ];
+
+        // Game state
+        let currentWordIndex = 0;
+        let currentWord = "";
+        let scrambledLetters = [];
+        let placedLetters = [];
+        let score = 0;
+        let streak = 0;
+        let hintsUsed = 0;
+        let startTime = null;
+        let timerInterval = null;
+        let soundEnabled = true;
+        let shuffledWords = [];
+
+        // DOM Elements
+        const dropZone = document.getElementById('dropZone');
+        const letterBank = document.getElementById('letterBank');
+        const scoreEl = document.getElementById('score');
+        const streakEl = document.getElementById('streak');
+        const timerEl = document.getElementById('timer');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const successOverlay = document.getElementById('successOverlay');
+        const successWord = document.getElementById('successWord');
+        const gameContainer = document.getElementById('gameContainer');
+        const completeContainer = document.getElementById('completeContainer');
+        const finalScore = document.getElementById('finalScore');
+        const finalStats = document.getElementById('finalStats');
+        const soundToggle = document.getElementById('soundToggle');
+
+        // Sound effects using Web Audio API
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            switch(type) {
+                case 'drop':
+                    oscillator.frequency.setValueAtTime(600, audioCtx.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1);
+                    gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                    oscillator.start(audioCtx.currentTime);
+                    oscillator.stop(audioCtx.currentTime + 0.1);
+                    break;
+                case 'correct':
+                    oscillator.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+                    oscillator.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.15);
+                    oscillator.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.3);
+                    gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                    oscillator.start(audioCtx.currentTime);
+                    oscillator.stop(audioCtx.currentTime + 0.5);
+                    break;
+                case 'wrong':
+                    oscillator.frequency.setValueAtTime(200, audioCtx.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.3);
+                    gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    oscillator.start(audioCtx.currentTime);
+                    oscillator.stop(audioCtx.currentTime + 0.3);
+                    break;
+                case 'complete':
+                    const notes = [523.25, 659.25, 783.99, 1046.50];
+                    notes.forEach((freq, i) => {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + i * 0.15);
+                        gain.gain.setValueAtTime(0.3, audioCtx.currentTime + i * 0.15);
+                        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + i * 0.15 + 0.3);
+                        osc.start(audioCtx.currentTime + i * 0.15);
+                        osc.stop(audioCtx.currentTime + i * 0.15 + 0.3);
+                    });
+                    break;
+            }
+        }
+
+        // Shuffle array
+        function shuffle(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        // Initialize game
+        function initGame() {
+            shuffledWords = shuffle(words);
+            currentWordIndex = 0;
+            score = 0;
+            streak = 0;
+            hintsUsed = 0;
+            startTime = Date.now();
+            
+            updateStats();
+            startTimer();
+            loadWord();
+            
+            gameContainer.style.display = 'block';
+            completeContainer.classList.remove('show');
+        }
+
+        // Load current word
+        function loadWord() {
+            currentWord = shuffledWords[currentWordIndex].toUpperCase();
+            placedLetters = new Array(currentWord.length).fill(null);
+            
+            // Scramble letters (excluding spaces)
+            const lettersOnly = currentWord.split('').filter(l => l !== ' ');
+            scrambledLetters = shuffle(lettersOnly);
+            
+            renderDropZone();
+            renderLetterBank();
+            updateProgress();
+        }
+
+        // Render drop zone slots
+        function renderDropZone() {
+            dropZone.innerHTML = '';
+            
+            currentWord.split('').forEach((char, index) => {
+                if (char === ' ') {
+                    const spacer = document.createElement('div');
+                    spacer.className = 'letter-slot space';
+                    spacer.dataset.index = index;
+                    dropZone.appendChild(spacer);
+                } else {
+                    const slot = document.createElement('div');
+                    slot.className = 'letter-slot';
+                    slot.dataset.index = index;
+                    
+                    if (placedLetters[index]) {
+                        slot.textContent = placedLetters[index];
+                        slot.classList.add('filled');
+                    }
+                    
+                    // Drop events
+                    slot.addEventListener('dragover', handleDragOver);
+                    slot.addEventListener('drop', handleDrop);
+                    slot.addEventListener('click', handleSlotClick);
+                    
+                    dropZone.appendChild(slot);
+                }
+            });
+        }
+
+        // Render letter bank
+        function renderLetterBank() {
+            letterBank.innerHTML = '';
+            
+            scrambledLetters.forEach((letter, index) => {
+                const tile = document.createElement('div');
+                tile.className = 'letter-tile';
+                tile.textContent = letter;
+                tile.draggable = true;
+                tile.dataset.index = index;
+                
+                if (placedLetters.includes(letter) && 
+                    placedLetters.filter(l => l === letter).length > 
+                    scrambledLetters.slice(0, index).filter(l => l === letter).length) {
+                    // Check if this specific tile is used
+                }
+                
+                // Check if tile is used
+                const usedCount = placedLetters.filter(l => l === letter).length;
+                const availableCount = scrambledLetters.slice(0, index + 1).filter(l => l === letter).length;
+                const totalOfThisLetter = scrambledLetters.filter(l => l === letter).length;
+                
+                let usedOfThisLetter = 0;
+                scrambledLetters.forEach((l, i) => {
+                    if (l === letter && i < index) {
+                        // Count how many of this letter before this index are "used"
+                    }
+                });
+                
+                tile.addEventListener('dragstart', handleDragStart);
+                tile.addEventListener('dragend', handleDragEnd);
+                tile.addEventListener('click', handleTileClick);
+                
+                letterBank.appendChild(tile);
+            });
+            
+            updateTileStates();
+        }
+
+        // Update which tiles are used
+        function updateTileStates() {
+            const tiles = letterBank.querySelectorAll('.letter-tile');
+            const usedLetters = [...placedLetters].filter(l => l !== null);
+            const usedCounts = {};
+            
+            tiles.forEach(tile => {
+                const letter = tile.textContent;
+                if (!usedCounts[letter]) usedCounts[letter] = 0;
+                
+                const placedCount = placedLetters.filter(l => l === letter).length;
+                
+                if (usedCounts[letter] < placedCount) {
+                    tile.classList.add('used');
+                    usedCounts[letter]++;
+                } else {
+                    tile.classList.remove('used');
+                }
+            });
+        }
+
+        // Drag and drop handlers
+        let draggedLetter = null;
+        let draggedTile = null;
+
+        function handleDragStart(e) {
+            if (this.classList.contains('used')) {
+                e.preventDefault();
+                return;
+            }
+            draggedLetter = this.textContent;
+            draggedTile = this;
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragEnd(e) {
+            this.classList.remove('dragging');
+            draggedLetter = null;
+            draggedTile = null;
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const index = parseInt(this.dataset.index);
+            
+            if (currentWord[index] === ' ') return;
+            if (placedLetters[index] !== null) return;
+            
+            placedLetters[index] = draggedLetter;
+            playSound('drop');
+            
+            renderDropZone();
+            updateTileStates();
+            checkWord();
+        }
+
+        // Click handlers for touch devices
+        let selectedTile = null;
+
+        function handleTileClick(e) {
+            if (this.classList.contains('used')) return;
+            
+            // Find first empty slot
+            const emptyIndex = placedLetters.findIndex((l, i) => l === null && currentWord[i] !== ' ');
+            
+            if (emptyIndex !== -1) {
+                placedLetters[emptyIndex] = this.textContent;
+                playSound('drop');
+                renderDropZone();
+                updateTileStates();
+                checkWord();
+            }
+        }
+
+        function handleSlotClick(e) {
+            const index = parseInt(this.dataset.index);
+            
+            if (placedLetters[index] !== null) {
+                // Remove letter from slot
+                placedLetters[index] = null;
+                renderDropZone();
+                updateTileStates();
+            }
+        }
+
+        // Check if word is complete and correct
+        function checkWord() {
+            const allFilled = placedLetters.every((l, i) => l !== null || currentWord[i] === ' ');
+            
+            if (allFilled) {
+                const attempt = placedLetters.map((l, i) => currentWord[i] === ' ' ? ' ' : l).join('');
+                
+                if (attempt === currentWord) {
+                    // Correct!
+                    playSound('correct');
+                    streak++;
+                    const points = Math.max(10, 100 - (hintsUsed * 20));
+                    score += points * (1 + streak * 0.1);
+                    score = Math.round(score);
+                    
+                    // Show success
+                    const slots = dropZone.querySelectorAll('.letter-slot:not(.space)');
+                    slots.forEach((slot, i) => {
+                        setTimeout(() => {
+                            slot.classList.add('correct');
+                        }, i * 50);
+                    });
+                    
+                    setTimeout(() => {
+                        successWord.textContent = currentWord;
+                        successOverlay.classList.add('show');
+                    }, 500);
+                    
+                    updateStats();
+                } else {
+                    // Wrong
+                    playSound('wrong');
+                    streak = 0;
+                    dropZone.classList.add('shake');
+                    setTimeout(() => dropZone.classList.remove('shake'), 400);
+                    updateStats();
+                }
+            }
+        }
+
+        // Next word
+        function nextWord() {
+            successOverlay.classList.remove('show');
+            hintsUsed = 0;
+            currentWordIndex++;
+            
+            if (currentWordIndex >= shuffledWords.length) {
+                gameComplete();
+            } else {
+                loadWord();
+            }
+        }
+
+        // Game complete
+        function gameComplete() {
+            playSound('complete');
+            clearInterval(timerInterval);
+            
+            gameContainer.style.display = 'none';
+            completeContainer.classList.add('show');
+            
+            finalScore.textContent = score;
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            finalStats.textContent = `Completed in ${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Update stats display
+        function updateStats() {
+            scoreEl.textContent = score;
+            streakEl.textContent = streak;
+        }
+
+        // Update progress
+        function updateProgress() {
+            const progress = ((currentWordIndex) / shuffledWords.length) * 100;
+            progressFill.style.width = `${progress}%`;
+            progressText.textContent = `Word ${currentWordIndex + 1} of ${shuffledWords.length}`;
+        }
+
+        // Timer
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            
+            timerInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = elapsed % 60;
+                timerEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        // Reset current word
+        function resetWord() {
+            placedLetters = new Array(currentWord.length).fill(null);
+            renderDropZone();
+            updateTileStates();
+        }
+
+        // Skip word
+        function skipWord() {
+            streak = 0;
+            updateStats();
+            nextWord();
+        }
+
+        // Hint - reveal one letter
+        function giveHint() {
+            const emptyIndices = [];
+            placedLetters.forEach((l, i) => {
+                if (l === null && currentWord[i] !== ' ') {
+                    emptyIndices.push(i);
+                }
+            });
+            
+            if (emptyIndices.length > 0) {
+                hintsUsed++;
+                const randomIndex = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+                placedLetters[randomIndex] = currentWord[randomIndex];
+                playSound('drop');
+                renderDropZone();
+                updateTileStates();
+                checkWord();
+            }
+        }
+
+        // Toggle sound
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            soundToggle.textContent = soundEnabled ? '🔊' : '🔇';
+        }
+
+        // Event listeners
+        document.getElementById('resetBtn').addEventListener('click', resetWord);
+        document.getElementById('skipBtn').addEventListener('click', skipWord);
+        document.getElementById('hintBtn').addEventListener('click', giveHint);
+        document.getElementById('nextWordBtn').addEventListener('click', nextWord);
+        document.getElementById('playAgainBtn').addEventListener('click', initGame);
+        soundToggle.addEventListener('click', toggleSound);
+
+        // Initialize
+        initGame();
+    </script>
+</body>
+</html>
