@@ -713,8 +713,15 @@
             state.hintsUsed++;
 
             const idx = empty[Math.floor(Math.random() * empty.length)];
-            state.placed[idx] = state.currentWord[idx];
+            const letter = state.currentWord[idx];
+            state.placed[idx] = letter;
             state.revealed.push(idx);
+            
+            // Remove this letter from scrambled letters (one instance)
+            const scrambledIdx = state.scrambled.indexOf(letter);
+            if (scrambledIdx !== -1) {
+                state.scrambled.splice(scrambledIdx, 1);
+            }
 
             playSound('powerup');
             render();
@@ -733,6 +740,11 @@
                 if (vowels.includes(char) && state.placed[i] === null) {
                     state.placed[i] = char;
                     state.revealed.push(i);
+                    // Remove this vowel from scrambled letters (one instance)
+                    const idx = state.scrambled.indexOf(char);
+                    if (idx !== -1) {
+                        state.scrambled.splice(idx, 1);
+                    }
                     used = true;
                 }
             });
