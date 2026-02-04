@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Airplane | Speak Academy</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --black: #1a1a1a;
+            --black-light: #2a2a2a;
+            --orange: #ff6b35;
+            --orange-dark: #e55a2b;
+            --white: #ffffff;
+            --gray-light: #f5f5f5;
+            --gray: #e0e0e0;
+            --gray-dark: #888;
+            --success: #4caf50;
+            --danger: #ef4444;
+            --sky-light: #e0f2fe;
+            --sky: #7dd3fc;
+            --sky-dark: #0ea5e9;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, var(--black) 0%, var(--black-light) 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: var(--white);
+            overflow: hidden;
+        }
+
+        .header { text-align: center; margin-bottom: 10px; }
+        .logo { font-size: 0.9rem; font-weight: 700; color: var(--orange); letter-spacing: 3px; text-transform: uppercase; }
+        .game-title { font-size: 1.8rem; font-weight: 800; color: var(--white); }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            width: 100%;
+            max-width: 700px;
+        }
+
+        .stat-box {
+            background: var(--black-light);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 8px 15px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .stat-box .value {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--orange);
+            font-weight: 700;
+        }
+
+        .lives-box span.lost {
+            opacity: 0.3;
+            filter: grayscale(1);
+        }
+
+        /* Game Container */
+        .game-container {
+            background: linear-gradient(180deg, var(--sky-light) 0%, var(--sky) 50%, var(--sky-dark) 100%);
+            border-radius: 20px;
+            max-width: 700px;
+            width: 100%;
+            height: 450px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            border: 4px solid var(--orange);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Clouds Background */
+        .cloud {
+            position: absolute;
+            background: rgba(255,255,255,0.8);
+            border-radius: 50px;
+            animation: cloudMove linear infinite;
+        }
+
+        @keyframes cloudMove {
+            from { transform: translateX(100%); }
+            to { transform: translateX(-200%); }
+        }
+
+        /* Question Display */
+        .question-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 12px 20px;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 600;
+            z-index: 10;
+        }
+
+        .question-bar .question-word {
+            color: var(--orange);
+            font-size: 1.3rem;
+        }
+
+        /* Airplane */
+        .airplane {
+            position: absolute;
+            left: 80px;
+            font-size: 3rem;
+            transition: top 0.1s ease-out;
+            z-index: 20;
+            filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.3));
+        }
+
+        .airplane.hit {
+            animation: planeHit 0.3s ease;
+        }
+
+        @keyframes planeHit {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-15deg); }
+            75% { transform: rotate(15deg); }
+        }
+
+        .airplane.collect {
+            animation: planeCollect 0.2s ease;
+        }
+
+        @keyframes planeCollect {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        /* Answer Clouds */
+        .answer-cloud {
+            position: absolute;
+            padding: 12px 25px;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: transform 0.1s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .answer-cloud.neutral {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 3px solid #0ea5e9;
+            color: #0c4a6e;
+        }
+
+        .answer-cloud.correct {
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            border: 3px solid var(--success);
+            color: #166534;
+        }
+
+        .answer-cloud.wrong {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            border: 3px solid var(--danger);
+            color: #991b1b;
+        }
+
+        .answer-cloud .cloud-icon {
+            font-size: 1.2rem;
+        }
+
+        .answer-cloud.collected {
+            animation: cloudCollected 0.3s ease forwards;
+        }
+
+        @keyframes cloudCollected {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+
+        .answer-cloud.hit-wrong {
+            animation: cloudWrong 0.3s ease forwards;
+        }
+
+        @keyframes cloudWrong {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.8); background: var(--danger); }
+            100% { transform: scale(1); opacity: 0.5; }
+        }
+
+        /* Start Screen Overlay */
+        .start-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            border-radius: 16px;
+        }
+
+        .start-overlay.hidden {
+            display: none;
+        }
+
+        .start-overlay h2 {
+            color: white;
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+        }
+
+        .start-overlay p {
+            color: var(--gray);
+            margin-bottom: 25px;
+            text-align: center;
+            line-height: 1.6;
+            padding: 0 20px;
+        }
+
+        .start-overlay .plane-demo {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 15px 50px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: var(--orange);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background: var(--orange-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--gray);
+            border: 2px solid var(--gray);
+            margin-top: 10px;
+            padding: 10px 30px;
+            font-size: 1rem;
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--orange);
+            color: var(--orange);
+        }
+
+        /* Controls hint */
+        .controls-hint {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.6);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            z-index: 10;
+        }
+
+        .controls-hint kbd {
+            background: rgba(255,255,255,0.2);
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin: 0 3px;
+        }
+
+        /* Game Over / Complete overlay */
+        .overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            padding: 20px;
+        }
+
+        .overlay.show { opacity: 1; pointer-events: all; }
+
+        .modal {
+            background: var(--white);
+            padding: 40px;
+            border-radius: 24px;
+            text-align: center;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .overlay.show .modal { transform: scale(1); }
+
+        .modal-icon { font-size: 3.5rem; margin-bottom: 15px; }
+        .modal-title { font-size: 1.6rem; color: var(--black); margin-bottom: 10px; font-weight: 700; }
+        .modal-subtitle { color: var(--gray-dark); margin-bottom: 20px; }
+
+        .modal-stats { display: flex; justify-content: center; gap: 25px; margin-bottom: 25px; }
+        .modal-stat { text-align: center; }
+        .modal-stat-value { font-size: 1.8rem; font-weight: 700; color: var(--orange); }
+        .modal-stat-label { font-size: 0.8rem; color: var(--gray-dark); }
+
+        .sound-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--white);
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 50;
+        }
+
+        #confettiCanvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 200;
+        }
+
+        @media (max-width: 600px) {
+            .game-container { height: 400px; }
+            .airplane { font-size: 2.5rem; left: 50px; }
+            .answer-cloud { padding: 10px 18px; font-size: 0.95rem; }
+            .question-bar { font-size: 1rem; padding: 10px 15px; }
+            .question-bar .question-word { font-size: 1.1rem; }
+        }
+    </style>
+</head>
+<body>
+    <button class="sound-toggle" id="soundToggle">🔊</button>
+    <canvas id="confettiCanvas"></canvas>
+
+    <header class="header">
+        <div class="logo">Speak Academy</div>
+        <h1 class="game-title">✈️ Airplane</h1>
+    </header>
+
+    <div class="stats-bar">
+        <div class="stat-box lives-box">
+            <span id="livesDisplay">❤️❤️❤️</span>
+        </div>
+        <div class="stat-box">
+            <span>🎯</span>
+            <span>Question:</span>
+            <span class="value" id="currentQ">1</span>
+            <span>/</span>
+            <span class="value" id="totalQ">10</span>
+        </div>
+        <div class="stat-box">
+            <span>⭐</span>
+            <span>Score:</span>
+            <span class="value" id="scoreDisplay">0</span>
+        </div>
+    </div>
+
+    <div class="game-container" id="gameContainer">
+        <!-- Question Bar -->
+        <div class="question-bar">
+            <span>Find the translation of: </span>
+            <span class="question-word" id="questionWord">loading...</span>
+        </div>
+
+        <!-- Airplane -->
+        <div class="airplane" id="airplane">✈️</div>
+
+        <!-- Answer clouds will be added dynamically -->
+
+        <!-- Controls hint -->
+        <div class="controls-hint">
+            <kbd>↑</kbd> / <kbd>↓</kbd> or touch to move
+        </div>
+
+        <!-- Start Overlay -->
+        <div class="start-overlay" id="startOverlay">
+            <div class="plane-demo">✈️</div>
+            <h2>Airplane</h2>
+            <p>Fly into the CORRECT translations!<br>Avoid the wrong ones!</p>
+            <button class="btn btn-primary" id="startBtn">Take Off! 🛫</button>
+        </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div class="overlay" id="gameOverOverlay">
+        <div class="modal">
+            <div class="modal-icon">💥</div>
+            <h2 class="modal-title">Crash Landing!</h2>
+            <p class="modal-subtitle">You ran out of lives</p>
+            <div class="modal-stats">
+                <div class="modal-stat">
+                    <div class="modal-stat-value" id="gameOverScore">0</div>
+                    <div class="modal-stat-label">Score</div>
+                </div>
+                <div class="modal-stat">
+                    <div class="modal-stat-value" id="gameOverCorrect">0</div>
+                    <div class="modal-stat-label">Correct</div>
+                </div>
+            </div>
+            <button class="btn btn-primary" id="tryAgainBtn">Try Again</button>
+            <button class="btn btn-secondary" id="menuBtn1">🏠 Main Menu</button>
+        </div>
+    </div>
+
+    <!-- Game Complete Modal -->
+    <div class="overlay" id="completeOverlay">
+        <div class="modal">
+            <div class="modal-icon" id="completeIcon">🏆</div>
+            <h2 class="modal-title">Flight Complete!</h2>
+            <p class="modal-subtitle" id="completeSubtitle">Smooth landing!</p>
+            <div class="modal-stats">
+                <div class="modal-stat">
+                    <div class="modal-stat-value" id="finalScore">0</div>
+                    <div class="modal-stat-label">Score</div>
+                </div>
+                <div class="modal-stat">
+                    <div class="modal-stat-value" id="finalAccuracy">0%</div>
+                    <div class="modal-stat-label">Accuracy</div>
+                </div>
+            </div>
+            <button class="btn btn-primary" id="playAgainBtn">Fly Again</button>
+            <button class="btn btn-secondary" id="menuBtn2">🏠 Main Menu</button>
+        </div>
+    </div>
+
+    <script>
+        const DEFAULT_DATA_URL = 'words/airplane.json';
+        const TOTAL_QUESTIONS = 10;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const dataParam = urlParams.get('data') || urlParams.get('set');
+
+        let state = {
+            pairs: [],
+            currentIndex: 0,
+            score: 0,
+            correct: 0,
+            wrong: 0,
+            lives: 3,
+            maxLives: 3,
+            planeY: 200,
+            gameRunning: false,
+            answerClouds: [],
+            cloudSpeed: 2,
+            animationId: null,
+            soundOn: true,
+            currentQuestion: null,
+            answered: false
+        };
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (!state.soundOn) return;
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            switch(type) {
+                case 'correct':
+                    [523, 659, 784].forEach((f, i) => {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.connect(g); g.connect(audioCtx.destination);
+                        o.frequency.setValueAtTime(f, audioCtx.currentTime + i * 0.08);
+                        g.gain.setValueAtTime(0.12, audioCtx.currentTime + i * 0.08);
+                        g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + i * 0.08 + 0.15);
+                        o.start(audioCtx.currentTime + i * 0.08);
+                        o.stop(audioCtx.currentTime + i * 0.08 + 0.15);
+                    });
+                    break;
+                case 'wrong':
+                    osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.3);
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+                    break;
+                case 'whoosh':
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.2);
+                    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+                    break;
+                case 'complete':
+                    [523, 659, 784, 1047].forEach((f, i) => {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.connect(g); g.connect(audioCtx.destination);
+                        o.frequency.setValueAtTime(f, audioCtx.currentTime + i * 0.12);
+                        g.gain.setValueAtTime(0.12, audioCtx.currentTime + i * 0.12);
+                        g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + i * 0.12 + 0.25);
+                        o.start(audioCtx.currentTime + i * 0.12);
+                        o.stop(audioCtx.currentTime + i * 0.12 + 0.25);
+                    });
+                    break;
+            }
+        }
+
+        function shuffle(arr) {
+            const a = [...arr];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        async function loadData() {
+            let url = DEFAULT_DATA_URL;
+            if (dataParam) {
+                url = dataParam.startsWith('http') ? dataParam : `words/${dataParam}.json`;
+            }
+
+            try {
+                const res = await fetch(url);
+                if (!res.ok) throw new Error('Failed to load');
+                const data = await res.json();
+                
+                state.pairs = data.pairs || [];
+                console.log('Loaded pairs:', state.pairs.length);
+            } catch (e) {
+                console.warn('Could not load JSON, using fallback:', e);
+                state.pairs = [
+                    { word: "dog", translation: "perro" },
+                    { word: "cat", translation: "gato" },
+                    { word: "house", translation: "casa" },
+                    { word: "book", translation: "libro" },
+                    { word: "water", translation: "agua" },
+                    { word: "food", translation: "comida" },
+                    { word: "friend", translation: "amigo" },
+                    { word: "school", translation: "escuela" },
+                    { word: "work", translation: "trabajo" },
+                    { word: "time", translation: "tiempo" },
+                    { word: "day", translation: "día" },
+                    { word: "night", translation: "noche" },
+                    { word: "city", translation: "ciudad" },
+                    { word: "love", translation: "amor" },
+                    { word: "happy", translation: "feliz" },
+                    { word: "big", translation: "grande" },
+                    { word: "small", translation: "pequeño" },
+                    { word: "good", translation: "bueno" },
+                    { word: "bad", translation: "malo" },
+                    { word: "fast", translation: "rápido" }
+                ];
+            }
+
+            document.getElementById('totalQ').textContent = TOTAL_QUESTIONS;
+            createClouds();
+        }
+
+        function createClouds() {
+            const container = document.getElementById('gameContainer');
+            // Create decorative background clouds
+            for (let i = 0; i < 5; i++) {
+                const cloud = document.createElement('div');
+                cloud.className = 'cloud';
+                cloud.style.width = (80 + Math.random() * 100) + 'px';
+                cloud.style.height = (30 + Math.random() * 30) + 'px';
+                cloud.style.top = (50 + Math.random() * 300) + 'px';
+                cloud.style.left = (Math.random() * 100) + '%';
+                cloud.style.animationDuration = (15 + Math.random() * 10) + 's';
+                cloud.style.animationDelay = (-Math.random() * 20) + 's';
+                container.appendChild(cloud);
+            }
+        }
+
+        function startGame() {
+            state.currentIndex = 0;
+            state.score = 0;
+            state.correct = 0;
+            state.wrong = 0;
+            state.lives = state.maxLives;
+            state.planeY = 200;
+            state.cloudSpeed = 2;
+            state.gameRunning = true;
+            state.pairs = shuffle([...state.pairs]);
+
+            document.getElementById('startOverlay').classList.add('hidden');
+            document.getElementById('airplane').style.top = state.planeY + 'px';
+            
+            updateStats();
+            updateLivesDisplay();
+            nextQuestion();
+            gameLoop();
+        }
+
+        function nextQuestion() {
+            if (state.currentIndex >= TOTAL_QUESTIONS) {
+                gameComplete();
+                return;
+            }
+
+            state.answered = false;
+
+            // Clear old answer clouds
+            document.querySelectorAll('.answer-cloud').forEach(c => c.remove());
+            state.answerClouds = [];
+
+            // Get current question
+            const pair = state.pairs[state.currentIndex % state.pairs.length];
+            state.currentQuestion = pair;
+
+            // Display question
+            document.getElementById('questionWord').textContent = pair.word;
+            document.getElementById('currentQ').textContent = state.currentIndex + 1;
+
+            // Generate answer options (1 correct, 2 wrong)
+            const wrongAnswers = state.pairs
+                .filter(p => p.translation !== pair.translation)
+                .map(p => p.translation);
+            const shuffledWrong = shuffle(wrongAnswers).slice(0, 2);
+            
+            // Create options array (not shuffled yet)
+            const options = [
+                { text: pair.translation, isCorrect: true },
+                { text: shuffledWrong[0], isCorrect: false },
+                { text: shuffledWrong[1], isCorrect: false }
+            ];
+
+            // Create answer clouds at different heights
+            const container = document.getElementById('gameContainer');
+            const containerHeight = container.offsetHeight;
+            
+            // Shuffle Y positions so correct answer appears at random height each time
+            const positions = shuffle([80, 180, 280]);
+            
+            // Shuffle which option gets which position
+            const shuffledOptions = shuffle([...options]);
+            
+            shuffledOptions.forEach((opt, i) => {
+                const cloud = document.createElement('div');
+                cloud.className = 'answer-cloud neutral';
+                cloud.innerHTML = `<span class="cloud-text">${opt.text}</span>`;
+                cloud.style.right = '-200px';
+                cloud.style.top = (positions[i] + 20) + 'px';
+                cloud.dataset.correct = opt.isCorrect;
+                container.appendChild(cloud);
+                
+                // Add slight speed variation (-20% to +20%)
+                const speedVariation = 0.8 + (Math.random() * 0.4);
+                
+                state.answerClouds.push({
+                    element: cloud,
+                    x: container.offsetWidth + 50 + (Math.random() * 80), // Slightly staggered start
+                    y: positions[i] + 20,
+                    isCorrect: opt.isCorrect,
+                    collected: false,
+                    speedMultiplier: speedVariation
+                });
+            });
+
+            // Increase speed slightly each question
+            state.cloudSpeed = 2 + (state.currentIndex * 0.15);
+        }
+
+        function gameLoop() {
+            if (!state.gameRunning) return;
+
+            const container = document.getElementById('gameContainer');
+            const airplane = document.getElementById('airplane');
+            const planeRect = airplane.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+
+            // Move clouds
+            state.answerClouds.forEach(cloud => {
+                if (cloud.collected) return;
+
+                // Each cloud moves at its own speed
+                cloud.x -= state.cloudSpeed * cloud.speedMultiplier;
+                cloud.element.style.right = (container.offsetWidth - cloud.x) + 'px';
+
+                // Check collision with plane
+                const cloudRect = cloud.element.getBoundingClientRect();
+                
+                if (isColliding(planeRect, cloudRect)) {
+                    handleCollision(cloud);
+                }
+
+                // Remove if off screen
+                if (cloud.x < -200) {
+                    // Missed correct answer
+                    if (cloud.isCorrect && !state.answered) {
+                        state.answered = true;
+                        // Don't penalize for missing, just move on
+                    }
+                }
+            });
+
+            // Check if all clouds passed
+            const allPassed = state.answerClouds.every(c => c.x < -200 || c.collected);
+            if (allPassed && !state.answered) {
+                state.answered = true;
+                state.currentIndex++;
+                setTimeout(nextQuestion, 500);
+            }
+
+            state.animationId = requestAnimationFrame(gameLoop);
+        }
+
+        function isColliding(rect1, rect2) {
+            return !(rect1.right < rect2.left || 
+                     rect1.left > rect2.right || 
+                     rect1.bottom < rect2.top || 
+                     rect1.top > rect2.bottom);
+        }
+
+        function handleCollision(cloud) {
+            if (cloud.collected || state.answered) return;
+            
+            cloud.collected = true;
+            state.answered = true;
+
+            const airplane = document.getElementById('airplane');
+
+            // Reveal all clouds as correct or wrong
+            state.answerClouds.forEach(c => {
+                c.element.classList.remove('neutral');
+                if (c.isCorrect) {
+                    c.element.classList.add('correct');
+                    c.element.innerHTML = `<span class="cloud-icon">✓</span> ${c.element.textContent}`;
+                } else {
+                    c.element.classList.add('wrong');
+                    c.element.innerHTML = `<span class="cloud-icon">✗</span> ${c.element.textContent}`;
+                }
+            });
+
+            if (cloud.isCorrect) {
+                // Correct!
+                state.correct++;
+                state.score += 10 + Math.floor(state.cloudSpeed * 5);
+                
+                cloud.element.classList.add('collected');
+                airplane.classList.add('collect');
+                setTimeout(() => airplane.classList.remove('collect'), 200);
+                
+                playSound('correct');
+
+                state.currentIndex++;
+                setTimeout(nextQuestion, 800);
+
+            } else {
+                // Wrong!
+                state.wrong++;
+                loseLife();
+                
+                cloud.element.classList.add('hit-wrong');
+                airplane.classList.add('hit');
+                setTimeout(() => airplane.classList.remove('hit'), 300);
+                
+                playSound('wrong');
+
+                if (state.lives > 0) {
+                    state.currentIndex++;
+                    setTimeout(nextQuestion, 1000);
+                }
+            }
+
+            updateStats();
+        }
+
+        function loseLife() {
+            state.lives--;
+            updateLivesDisplay();
+            
+            if (state.lives <= 0) {
+                setTimeout(gameOver, 500);
+            }
+        }
+
+        function updateLivesDisplay() {
+            const livesEl = document.getElementById('livesDisplay');
+            let html = '';
+            for (let i = 0; i < state.maxLives; i++) {
+                html += i < state.lives ? '<span>❤️</span>' : '<span class="lost">❤️</span>';
+            }
+            livesEl.innerHTML = html;
+        }
+
+        function updateStats() {
+            document.getElementById('scoreDisplay').textContent = state.score;
+        }
+
+        function gameOver() {
+            state.gameRunning = false;
+            cancelAnimationFrame(state.animationId);
+            
+            document.getElementById('gameOverScore').textContent = state.score;
+            document.getElementById('gameOverCorrect').textContent = state.correct;
+            
+            document.getElementById('gameOverOverlay').classList.add('show');
+        }
+
+        function gameComplete() {
+            state.gameRunning = false;
+            cancelAnimationFrame(state.animationId);
+            
+            const accuracy = state.correct + state.wrong > 0 
+                ? Math.round((state.correct / (state.correct + state.wrong)) * 100) 
+                : 0;
+
+            document.getElementById('finalScore').textContent = state.score;
+            document.getElementById('finalAccuracy').textContent = accuracy + '%';
+
+            if (accuracy >= 90) {
+                document.getElementById('completeIcon').textContent = '🏆';
+                document.getElementById('completeSubtitle').textContent = 'Perfect flight! ✈️🌟';
+            } else if (accuracy >= 70) {
+                document.getElementById('completeIcon').textContent = '🎉';
+                document.getElementById('completeSubtitle').textContent = 'Great flying! 👍';
+            } else {
+                document.getElementById('completeIcon').textContent = '👏';
+                document.getElementById('completeSubtitle').textContent = 'Safe landing! Keep practicing!';
+            }
+
+            playSound('complete');
+            launchConfetti();
+            document.getElementById('completeOverlay').classList.add('show');
+        }
+
+        function resetGame() {
+            document.querySelectorAll('.overlay').forEach(o => o.classList.remove('show'));
+            document.getElementById('startOverlay').classList.remove('hidden');
+            document.querySelectorAll('.answer-cloud').forEach(c => c.remove());
+            state.gameRunning = false;
+            cancelAnimationFrame(state.animationId);
+        }
+
+        // Plane movement
+        function movePlane(direction) {
+            const container = document.getElementById('gameContainer');
+            const maxY = container.offsetHeight - 100;
+            const minY = 60;
+            const speed = 20;
+
+            if (direction === 'up') {
+                state.planeY = Math.max(minY, state.planeY - speed);
+            } else {
+                state.planeY = Math.min(maxY, state.planeY + speed);
+            }
+
+            document.getElementById('airplane').style.top = state.planeY + 'px';
+        }
+
+        // Touch/Mouse controls
+        let touchStartY = 0;
+        const container = document.getElementById('gameContainer');
+
+        container.addEventListener('touchstart', (e) => {
+            touchStartY = e.touches[0].clientY;
+        });
+
+        container.addEventListener('touchmove', (e) => {
+            if (!state.gameRunning) return;
+            e.preventDefault();
+            
+            const touchY = e.touches[0].clientY;
+            const containerRect = container.getBoundingClientRect();
+            const relativeY = touchY - containerRect.top;
+            
+            state.planeY = Math.max(60, Math.min(containerRect.height - 100, relativeY - 30));
+            document.getElementById('airplane').style.top = state.planeY + 'px';
+        }, { passive: false });
+
+        container.addEventListener('mousemove', (e) => {
+            if (!state.gameRunning) return;
+            
+            const containerRect = container.getBoundingClientRect();
+            const relativeY = e.clientY - containerRect.top;
+            
+            state.planeY = Math.max(60, Math.min(containerRect.height - 100, relativeY - 30));
+            document.getElementById('airplane').style.top = state.planeY + 'px';
+        });
+
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            if (!state.gameRunning) {
+                if (e.code === 'Space' || e.code === 'Enter') {
+                    e.preventDefault();
+                    if (document.getElementById('completeOverlay').classList.contains('show') ||
+                        document.getElementById('gameOverOverlay').classList.contains('show')) {
+                        resetGame();
+                    } else {
+                        startGame();
+                    }
+                }
+                return;
+            }
+
+            if (e.code === 'ArrowUp' || e.code === 'KeyW') {
+                e.preventDefault();
+                movePlane('up');
+            } else if (e.code === 'ArrowDown' || e.code === 'KeyS') {
+                e.preventDefault();
+                movePlane('down');
+            }
+        });
+
+        // Continuous movement while key held
+        let keyHeld = null;
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'ArrowUp' || e.code === 'KeyW') keyHeld = 'up';
+            if (e.code === 'ArrowDown' || e.code === 'KeyS') keyHeld = 'down';
+        });
+        document.addEventListener('keyup', (e) => {
+            if (e.code === 'ArrowUp' || e.code === 'KeyW' || 
+                e.code === 'ArrowDown' || e.code === 'KeyS') {
+                keyHeld = null;
+            }
+        });
+        setInterval(() => {
+            if (keyHeld && state.gameRunning) movePlane(keyHeld);
+        }, 50);
+
+        // Confetti
+        function launchConfetti() {
+            const canvas = document.getElementById('confettiCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const confetti = [];
+            const colors = ['#ff6b35', '#4caf50', '#3b82f6', '#f59e0b', '#ef4444'];
+
+            for (let i = 0; i < 150; i++) {
+                confetti.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    w: Math.random() * 10 + 5,
+                    h: Math.random() * 6 + 4,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    speed: Math.random() * 3 + 2,
+                    angle: Math.random() * Math.PI * 2,
+                    spin: (Math.random() - 0.5) * 0.2,
+                    opacity: 1
+                });
+            }
+
+            let frame = 0;
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                confetti.forEach(c => {
+                    c.y += c.speed;
+                    c.x += Math.sin(c.angle) * 2;
+                    c.angle += c.spin;
+                    if (frame > 120) c.opacity = Math.max(0, c.opacity - 0.02);
+                    ctx.save();
+                    ctx.translate(c.x + c.w/2, c.y + c.h/2);
+                    ctx.rotate(c.angle);
+                    ctx.globalAlpha = c.opacity;
+                    ctx.fillStyle = c.color;
+                    ctx.fillRect(-c.w/2, -c.h/2, c.w, c.h);
+                    ctx.restore();
+                });
+                frame++;
+                if (frame < 180) requestAnimationFrame(animate);
+                else ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+            animate();
+        }
+
+        // Event Listeners
+        document.getElementById('startBtn').addEventListener('click', startGame);
+        document.getElementById('playAgainBtn').addEventListener('click', resetGame);
+        document.getElementById('tryAgainBtn').addEventListener('click', resetGame);
+        document.getElementById('menuBtn1').addEventListener('click', resetGame);
+        document.getElementById('menuBtn2').addEventListener('click', resetGame);
+
+        document.getElementById('soundToggle').addEventListener('click', () => {
+            state.soundOn = !state.soundOn;
+            document.getElementById('soundToggle').textContent = state.soundOn ? '🔊' : '🔇';
+        });
+
+        // Initialize
+        loadData();
+    </script>
+</body>
+</html>

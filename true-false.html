@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>True or False | Speak Academy</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --black: #1a1a1a;
+            --black-light: #2a2a2a;
+            --orange: #ff6b35;
+            --orange-dark: #e55a2b;
+            --orange-light: #ff8c5a;
+            --white: #ffffff;
+            --gray-light: #f5f5f5;
+            --gray: #e0e0e0;
+            --gray-dark: #888;
+            --success: #4caf50;
+            --danger: #ef4444;
+            --info: #3b82f6;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, var(--black) 0%, var(--black-light) 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: var(--white);
+            overflow: hidden;
+        }
+
+        .header { text-align: center; margin-bottom: 15px; }
+        .logo { font-size: 0.9rem; font-weight: 700; color: var(--orange); letter-spacing: 3px; text-transform: uppercase; }
+        .game-title { font-size: 2rem; font-weight: 800; color: var(--white); }
+        .set-title { font-size: 0.9rem; color: var(--gray-dark); margin-top: 5px; }
+
+        /* Difficulty Selection */
+        .difficulty-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .diff-btn {
+            padding: 10px 20px;
+            border: 2px solid var(--gray-dark);
+            background: transparent;
+            color: var(--white);
+            border-radius: 25px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .diff-btn:hover {
+            border-color: var(--orange);
+            color: var(--orange);
+        }
+
+        .diff-btn.active {
+            background: var(--orange);
+            border-color: var(--orange);
+            color: var(--white);
+        }
+
+        .diff-btn .cefr {
+            font-size: 0.7rem;
+            opacity: 0.8;
+            display: block;
+            margin-top: 2px;
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            width: 100%;
+            max-width: 700px;
+        }
+
+        .stat-box {
+            background: var(--black-light);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 10px 18px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .stat-box .value {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--orange);
+            font-weight: 700;
+        }
+
+        .lives-box {
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+        }
+
+        .lives-box .lost {
+            opacity: 0.3;
+            filter: grayscale(1);
+        }
+
+        @keyframes loseLife {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); opacity: 0.3; filter: grayscale(1); }
+        }
+
+        .lives-box .losing {
+            animation: loseLife 0.4s ease forwards;
+        }
+
+        /* Timer */
+        .timer-box {
+            background: var(--black-light);
+            border: 2px solid var(--orange);
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--orange);
+        }
+
+        .timer-box.urgent {
+            border-color: var(--danger);
+            color: var(--danger);
+            animation: pulse 0.5s ease infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* Game Container */
+        .game-container {
+            background: var(--white);
+            border-radius: 24px;
+            padding: 30px;
+            max-width: 700px;
+            width: 100%;
+            min-height: 400px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            border: 4px solid var(--orange);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Statement Area */
+        .statement-track {
+            width: 100%;
+            height: 120px;
+            position: relative;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .statement-card {
+            position: absolute;
+            left: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(135deg, var(--black) 0%, var(--black-light) 100%);
+            color: var(--white);
+            padding: 25px 40px;
+            border-radius: 16px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            white-space: nowrap;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+            transition: left linear;
+        }
+
+        .statement-card.correct-flash {
+            background: linear-gradient(135deg, var(--success) 0%, #45a049 100%);
+            animation: correctPop 0.3s ease;
+        }
+
+        .statement-card.wrong-flash {
+            background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
+            animation: wrongShake 0.3s ease;
+        }
+
+        @keyframes correctPop {
+            0% { transform: translateY(-50%) scale(1); }
+            50% { transform: translateY(-50%) scale(1.1); }
+            100% { transform: translateY(-50%) scale(1); }
+        }
+
+        @keyframes wrongShake {
+            0%, 100% { transform: translateY(-50%) translateX(0); }
+            25% { transform: translateY(-50%) translateX(-10px); }
+            75% { transform: translateY(-50%) translateX(10px); }
+        }
+
+        /* Answer Buttons */
+        .answer-buttons {
+            display: flex;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .answer-btn {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            font-size: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+
+        .answer-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .answer-btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn-true {
+            background: linear-gradient(135deg, var(--success) 0%, #45a049 100%);
+            color: white;
+        }
+
+        .btn-false {
+            background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
+            color: white;
+        }
+
+        .answer-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Keyboard hints */
+        .key-hints {
+            display: flex;
+            gap: 80px;
+            margin-top: 15px;
+            font-size: 0.85rem;
+            color: var(--gray-dark);
+        }
+
+        .key-hint {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .key-hint kbd {
+            background: var(--gray-light);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            border: 1px solid var(--gray);
+        }
+
+        /* Start Screen */
+        .start-screen {
+            text-align: center;
+        }
+
+        .start-screen h2 {
+            color: var(--black);
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+
+        .start-screen p {
+            color: var(--gray-dark);
+            margin-bottom: 25px;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: var(--orange);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background: var(--orange-dark);
+            transform: translateY(-2px);
+        }
+
+        /* Game Area (hidden until start) */
+        .game-area {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .game-area.active {
+            display: flex;
+        }
+
+        /* Streak indicator */
+        .streak-indicator {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--orange);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.3s ease;
+        }
+
+        .streak-indicator.show {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Overlays */
+        .overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            padding: 20px;
+        }
+
+        .overlay.show { opacity: 1; pointer-events: all; }
+
+        .modal {
+            background: var(--white);
+            padding: 40px;
+            border-radius: 24px;
+            text-align: center;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .overlay.show .modal { transform: scale(1); }
+
+        .modal-icon { font-size: 3.5rem; margin-bottom: 15px; }
+        .modal-title { font-size: 1.6rem; color: var(--black); margin-bottom: 10px; font-weight: 700; }
+        .modal-subtitle { color: var(--gray-dark); margin-bottom: 20px; }
+
+        .modal-stats { display: flex; justify-content: center; gap: 30px; margin-bottom: 25px; }
+        .modal-stat { text-align: center; }
+        .modal-stat-value { font-size: 1.8rem; font-weight: 700; color: var(--orange); }
+        .modal-stat-label { font-size: 0.85rem; color: var(--gray-dark); }
+
+        .sound-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--white);
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 50;
+        }
+
+        @media (max-width: 600px) {
+            .game-title { font-size: 1.6rem; }
+            .game-container { padding: 20px; min-height: 350px; }
+            .statement-card { font-size: 1rem; padding: 20px 25px; }
+            .answer-btn { width: 90px; height: 90px; font-size: 2.2rem; }
+            .answer-buttons { gap: 20px; }
+            .stat-box { padding: 8px 12px; font-size: 0.8rem; }
+            .key-hints { display: none; }
+        }
+
+        /* Confetti Canvas */
+        #confettiCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 200;
+        }
+
+        /* Victory Modal */
+        .victory-modal {
+            background: linear-gradient(135deg, #fff9e6 0%, #fff 100%);
+            border: 4px solid gold;
+        }
+
+        .trophy-animation {
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .star {
+            font-size: 2.5rem;
+            animation: starPop 0.5s ease forwards;
+            opacity: 0;
+            transform: scale(0);
+        }
+
+        .star1 { animation-delay: 0.2s; }
+        .star2 { animation-delay: 0.4s; }
+        .star3 { animation-delay: 0.6s; }
+
+        @keyframes starPop {
+            0% { opacity: 0; transform: scale(0) rotate(-180deg); }
+            50% { transform: scale(1.3) rotate(10deg); }
+            100% { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
+
+        /* Level indicator pulse */
+        .level-box.level-up {
+            animation: levelPulse 0.5s ease;
+            background: var(--orange);
+        }
+
+        @keyframes levelPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* Progress bar */
+        .progress-container {
+            width: 100%;
+            max-width: 300px;
+            height: 12px;
+            background: var(--gray);
+            border-radius: 6px;
+            margin: 15px auto;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--orange) 0%, var(--success) 100%);
+            border-radius: 6px;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <button class="sound-toggle" id="soundToggle">🔊</button>
+
+    <header class="header">
+        <div class="logo">Speak Academy</div>
+        <h1 class="game-title">True or False</h1>
+        <p class="set-title" id="setTitle">Loading...</p>
+    </header>
+
+    <div class="difficulty-bar">
+        <button class="diff-btn active" data-level="easy">
+            Easy
+            <span class="cefr">A1-A2</span>
+        </button>
+        <button class="diff-btn" data-level="medium">
+            Medium
+            <span class="cefr">B1</span>
+        </button>
+        <button class="diff-btn" data-level="hard">
+            Hard
+            <span class="cefr">B2-C1</span>
+        </button>
+    </div>
+
+    <div class="stats-bar">
+        <div class="stat-box lives-box">
+            <span id="livesDisplay">❤️❤️❤️</span>
+        </div>
+        <div class="stat-box level-box">
+            <span>🎮</span>
+            <span>Level:</span>
+            <span class="value" id="levelDisplay">1</span>
+            <span>/</span>
+            <span>3</span>
+        </div>
+        <div class="stat-box">
+            <span>✅</span>
+            <span>Progress:</span>
+            <span class="value" id="progressDisplay">0</span>
+            <span>/</span>
+            <span id="targetDisplay">10</span>
+        </div>
+        <div class="stat-box">
+            <span>⭐</span>
+            <span>Score:</span>
+            <span class="value" id="scoreDisplay">0</span>
+        </div>
+    </div>
+
+    <div class="game-container">
+        <div class="streak-indicator" id="streakIndicator">🔥 5 Streak!</div>
+
+        <!-- Start Screen -->
+        <div class="start-screen" id="startScreen">
+            <h2>Ready?</h2>
+            <p>Statements will fly across the screen.<br>Decide if each one is TRUE or FALSE!</p>
+            <button class="btn btn-primary" id="startBtn">Start Game</button>
+        </div>
+
+        <!-- Game Area -->
+        <div class="game-area" id="gameArea">
+            <div class="statement-track" id="statementTrack">
+                <div class="statement-card" id="statementCard">Loading...</div>
+            </div>
+
+            <div class="answer-buttons">
+                <button class="answer-btn btn-true" id="btnTrue">✓</button>
+                <button class="answer-btn btn-false" id="btnFalse">✗</button>
+            </div>
+
+            <div class="key-hints">
+                <div class="key-hint"><kbd>←</kbd> True</div>
+                <div class="key-hint"><kbd>→</kbd> False</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confetti Canvas -->
+    <canvas id="confettiCanvas"></canvas>
+
+    <!-- Level Complete Modal -->
+    <div class="overlay" id="levelCompleteOverlay">
+        <div class="modal">
+            <div class="modal-icon" id="levelCompleteIcon">🎉</div>
+            <h2 class="modal-title" id="levelCompleteTitle">Level 1 Complete!</h2>
+            <p class="modal-subtitle" id="levelCompleteSubtitle">Great job! Ready for the next challenge?</p>
+            <div class="modal-stats">
+                <div class="modal-stat">
+                    <div class="modal-stat-value" id="levelScore">0</div>
+                    <div class="modal-stat-label">Score</div>
+                </div>
+                <div class="modal-stat">
+                    <div class="modal-stat-value" id="levelAccuracy">0%</div>
+                    <div class="modal-stat-label">Accuracy</div>
+                </div>
+            </div>
+            <button class="btn btn-primary" id="nextLevelBtn">Next Level →</button>
+        </div>
+    </div>
+
+    <!-- Victory Modal -->
+    <div class="overlay" id="victoryOverlay">
+        <div class="modal victory-modal">
+            <div class="modal-icon">🏆</div>
+            <h2 class="modal-title">CHAMPION!</h2>
+            <p class="modal-subtitle">You completed all 3 levels!</p>
+            <div class="trophy-animation" id="trophyAnimation">
+                <span class="star star1">⭐</span>
+                <span class="star star2">⭐</span>
+                <span class="star star3">⭐</span>
+            </div>
+            <div class="modal-stats">
+                <div class="modal-stat">
+                    <div class="modal-stat-value" id="victoryScore">0</div>
+                    <div class="modal-stat-label">Total Score</div>
+                </div>
+                <div class="modal-stat">
+                    <div class="modal-stat-value" id="victoryCorrect">0</div>
+                    <div class="modal-stat-label">Correct</div>
+                </div>
+                <div class="modal-stat">
+                    <div class="modal-stat-value" id="victoryStreak">0</div>
+                    <div class="modal-stat-label">Best Streak</div>
+                </div>
+            </div>
+            <button class="btn btn-primary" id="victoryRestartBtn">Play Again 🎮</button>
+        </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div class="overlay" id="gameOverOverlay">
+        <div class="modal">
+            <div class="modal-icon" id="gameOverIcon">⏱️</div>
+            <h2 class="modal-title" id="gameOverTitle">Time's Up!</h2>
+            <p class="modal-subtitle" id="gameOverSubtitle">Great effort!</p>
+            <div class="modal-stats">
+                <div class="modal-stat">
+                    <div class="modal-stat-value" id="finalScore">0</div>
+                    <div class="modal-stat-label">Score</div>
+                </div>
+                <div class="modal-stat">
+                    <div class="modal-stat-value" id="finalCorrect">0</div>
+                    <div class="modal-stat-label">Correct</div>
+                </div>
+                <div class="modal-stat">
+                    <div class="modal-stat-value" id="finalBestStreak">0</div>
+                    <div class="modal-stat-label">Best Streak</div>
+                </div>
+            </div>
+            <button class="btn btn-primary" id="playAgainBtn">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        const DEFAULT_DATA_URL = 'words/true-false.json';
+        const GAME_DURATION = 60;
+        const BASE_SPEED = 8; // seconds to cross screen
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const dataParam = urlParams.get('data') || urlParams.get('set');
+
+        let state = {
+            allStatements: { easy: [], medium: [], hard: [] },
+            currentLevel: 'easy',
+            statements: [],
+            currentIndex: 0,
+            score: 0,
+            correct: 0,
+            wrong: 0,
+            streak: 0,
+            bestStreak: 0,
+            lives: 3,
+            maxLives: 3,
+            gameLevel: 1,
+            maxGameLevel: 3,
+            statementsPerLevel: 10,
+            levelCorrect: 0,
+            levelTarget: 8, // Need 8 out of 10 to pass level
+            timeLeft: 0,
+            gameRunning: false,
+            gameTimer: null,
+            statementTimer: null,
+            currentSpeed: BASE_SPEED,
+            setTitle: '',
+            soundOn: true,
+            answered: false
+        };
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (!state.soundOn) return;
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            switch(type) {
+                case 'correct':
+                    osc.frequency.setValueAtTime(523, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(783, audioCtx.currentTime + 0.1);
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.15);
+                    break;
+                case 'wrong':
+                    osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.2);
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+                    break;
+                case 'streak':
+                    [523, 659, 784].forEach((f, i) => {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.connect(g); g.connect(audioCtx.destination);
+                        o.frequency.setValueAtTime(f, audioCtx.currentTime + i * 0.08);
+                        g.gain.setValueAtTime(0.12, audioCtx.currentTime + i * 0.08);
+                        g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + i * 0.08 + 0.15);
+                        o.start(audioCtx.currentTime + i * 0.08);
+                        o.stop(audioCtx.currentTime + i * 0.08 + 0.15);
+                    });
+                    break;
+                case 'timeup':
+                    [400, 350, 300].forEach((f, i) => {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.connect(g); g.connect(audioCtx.destination);
+                        o.frequency.setValueAtTime(f, audioCtx.currentTime + i * 0.15);
+                        g.gain.setValueAtTime(0.15, audioCtx.currentTime + i * 0.15);
+                        g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + i * 0.15 + 0.2);
+                        o.start(audioCtx.currentTime + i * 0.15);
+                        o.stop(audioCtx.currentTime + i * 0.15 + 0.2);
+                    });
+                    break;
+                case 'hurry':
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+                    break;
+            }
+        }
+
+        function shuffle(arr) {
+            const a = [...arr];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        async function loadData() {
+            let url = DEFAULT_DATA_URL;
+            if (dataParam) {
+                url = dataParam.startsWith('http') ? dataParam : `words/${dataParam}.json`;
+            }
+
+            try {
+                const res = await fetch(url);
+                if (!res.ok) throw new Error('Failed to load');
+                const data = await res.json();
+                
+                state.allStatements.easy = data.easy || [];
+                state.allStatements.medium = data.medium || [];
+                state.allStatements.hard = data.hard || [];
+                state.setTitle = data.title || 'True or False';
+                
+                console.log('Loaded statements:', {
+                    easy: state.allStatements.easy.length,
+                    medium: state.allStatements.medium.length,
+                    hard: state.allStatements.hard.length
+                });
+            } catch (e) {
+                console.warn('Could not load JSON, using fallback:', e);
+                state.allStatements = {
+                    easy: [
+                        { statement: "The sun is hot", answer: true },
+                        { statement: "Fish can fly", answer: false },
+                        { statement: "Water is wet", answer: true },
+                        { statement: "Dogs say meow", answer: false },
+                        { statement: "Ice is cold", answer: true },
+                        { statement: "Bananas are blue", answer: false },
+                        { statement: "Birds have wings", answer: true },
+                        { statement: "Cars have wheels", answer: true },
+                        { statement: "The moon is made of cheese", answer: false },
+                        { statement: "Cats have four legs", answer: true },
+                        { statement: "Snow is hot", answer: false },
+                        { statement: "Trees have leaves", answer: true },
+                        { statement: "Elephants are small", answer: false },
+                        { statement: "People need food to live", answer: true },
+                        { statement: "Fire is cold", answer: false }
+                    ],
+                    medium: [
+                        { statement: "The Earth orbits the Sun", answer: true },
+                        { statement: "There are 8 days in a week", answer: false },
+                        { statement: "Humans have 206 bones", answer: true },
+                        { statement: "The capital of France is London", answer: false },
+                        { statement: "Water boils at 100°C", answer: true },
+                        { statement: "Spiders are insects", answer: false },
+                        { statement: "The Pacific is the largest ocean", answer: true },
+                        { statement: "Mount Everest is in Africa", answer: false },
+                        { statement: "Shakespeare wrote Romeo and Juliet", answer: true },
+                        { statement: "Sound travels faster than light", answer: false },
+                        { statement: "Dolphins are mammals", answer: true },
+                        { statement: "The Amazon is in Europe", answer: false }
+                    ],
+                    hard: [
+                        { statement: "Photosynthesis produces oxygen", answer: true },
+                        { statement: "Venus is the hottest planet", answer: true },
+                        { statement: "DNA stands for Deoxyribonucleic Acid", answer: true },
+                        { statement: "The Great Wall is visible from space", answer: false },
+                        { statement: "Octopuses have three hearts", answer: true },
+                        { statement: "Lightning never strikes twice", answer: false },
+                        { statement: "Honey never spoils", answer: true },
+                        { statement: "Goldfish have a 3-second memory", answer: false },
+                        { statement: "Mount Kilimanjaro is a volcano", answer: true },
+                        { statement: "Bats are blind", answer: false },
+                        { statement: "Bananas are berries", answer: true },
+                        { statement: "The Eiffel Tower shrinks in winter", answer: true }
+                    ]
+                };
+                state.setTitle = 'General Knowledge';
+            }
+
+            document.getElementById('setTitle').textContent = state.setTitle;
+        }
+
+        function initLevel() {
+            state.statements = shuffle([...state.allStatements[state.currentLevel]]);
+            state.currentIndex = 0;
+            resetGame();
+        }
+
+        function resetGame() {
+            state.score = 0;
+            state.correct = 0;
+            state.wrong = 0;
+            state.streak = 0;
+            state.bestStreak = 0;
+            state.lives = state.maxLives;
+            state.gameLevel = 1;
+            state.levelCorrect = 0;
+            state.gameRunning = false;
+            state.currentSpeed = BASE_SPEED;
+            state.answered = false;
+
+            document.getElementById('startScreen').style.display = 'block';
+            document.getElementById('gameArea').classList.remove('active');
+            document.getElementById('levelDisplay').textContent = '1';
+            
+            updateStats();
+            updateLivesDisplay();
+        }
+
+        function startGame() {
+            state.gameRunning = true;
+            state.statements = shuffle([...state.allStatements[state.currentLevel]]);
+            state.currentIndex = 0;
+            state.levelCorrect = 0;
+
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('gameArea').classList.add('active');
+
+            // Show first statement
+            showNextStatement();
+        }
+
+        function startNextLevel() {
+            state.gameLevel++;
+            state.levelCorrect = 0;
+            state.lives = state.maxLives; // Restore lives for new level
+            state.currentSpeed = Math.max(4, BASE_SPEED - (state.gameLevel - 1)); // Speed up each level
+            state.statements = shuffle([...state.allStatements[state.currentLevel]]);
+            state.currentIndex = 0;
+            state.gameRunning = true;
+
+            document.getElementById('levelDisplay').textContent = state.gameLevel;
+            document.querySelector('.level-box').classList.add('level-up');
+            setTimeout(() => document.querySelector('.level-box').classList.remove('level-up'), 500);
+
+            updateLivesDisplay();
+            updateStats();
+            
+            showNextStatement();
+        }
+
+        function showNextStatement() {
+            if (!state.gameRunning) return;
+
+            // Reset answered flag
+            state.answered = false;
+
+            // Get next statement (loop if needed)
+            if (state.currentIndex >= state.statements.length) {
+                state.statements = shuffle([...state.allStatements[state.currentLevel]]);
+                state.currentIndex = 0;
+            }
+
+            const current = state.statements[state.currentIndex];
+            const card = document.getElementById('statementCard');
+            
+            // Reset card
+            card.className = 'statement-card';
+            card.textContent = current.statement;
+            card.style.transition = 'none';
+            card.style.left = '100%';
+
+            // Force reflow
+            card.offsetHeight;
+
+            // Animate card across screen
+            card.style.transition = `left ${state.currentSpeed}s linear`;
+            card.style.left = '-100%';
+
+            // Set timer for when statement leaves screen (auto-wrong if not answered)
+            clearTimeout(state.statementTimer);
+            state.statementTimer = setTimeout(() => {
+                if (!state.answered && state.gameRunning) {
+                    handleAnswer(null); // No answer = wrong
+                }
+            }, state.currentSpeed * 1000);
+
+            state.currentIndex++;
+        }
+
+        function handleAnswer(playerAnswer) {
+            if (!state.gameRunning || state.answered) return;
+            state.answered = true;
+
+            clearTimeout(state.statementTimer);
+
+            const current = state.statements[state.currentIndex - 1];
+            const card = document.getElementById('statementCard');
+            const isCorrect = playerAnswer === current.answer;
+
+            // Stop card animation
+            const computedLeft = window.getComputedStyle(card).left;
+            card.style.transition = 'none';
+            card.style.left = computedLeft;
+
+            if (isCorrect) {
+                // Correct answer
+                state.correct++;
+                state.levelCorrect++;
+                state.streak++;
+                if (state.streak > state.bestStreak) state.bestStreak = state.streak;
+                
+                // Score: base 10 + streak bonus + level bonus
+                const points = 10 + (state.streak * 2) + (state.gameLevel * 5);
+                state.score += points;
+
+                card.classList.add('correct-flash');
+                playSound('correct');
+
+                // Show streak indicator at milestones
+                if (state.streak > 0 && state.streak % 5 === 0) {
+                    showStreakIndicator(state.streak);
+                    playSound('streak');
+                }
+
+            } else {
+                // Wrong answer
+                state.wrong++;
+                state.streak = 0;
+                loseLife();
+
+                card.classList.add('wrong-flash');
+                playSound('wrong');
+
+                // Show correct answer briefly
+                setTimeout(() => {
+                    card.textContent = `${current.statement} → ${current.answer ? 'TRUE' : 'FALSE'}`;
+                }, 300);
+            }
+
+            updateStats();
+
+            // Check if level is complete (10 statements answered)
+            const totalAnswered = state.levelCorrect + (state.statementsPerLevel - state.levelCorrect - (state.statements.length - state.currentIndex));
+            const levelStatementsDone = state.currentIndex;
+            
+            if (levelStatementsDone >= state.statementsPerLevel) {
+                // Level complete - check if passed
+                setTimeout(() => {
+                    if (state.levelCorrect >= state.levelTarget) {
+                        levelComplete();
+                    } else {
+                        endGame('failed');
+                    }
+                }, 800);
+                return;
+            }
+
+            // Show next statement after delay
+            if (state.gameRunning && state.lives > 0) {
+                setTimeout(showNextStatement, 1000);
+            }
+        }
+
+        function showStreakIndicator(streak) {
+            const indicator = document.getElementById('streakIndicator');
+            indicator.textContent = `🔥 ${streak} Streak!`;
+            indicator.classList.add('show');
+            setTimeout(() => indicator.classList.remove('show'), 1500);
+        }
+
+        function loseLife() {
+            if (state.lives > 0) {
+                state.lives--;
+                
+                const livesEl = document.getElementById('livesDisplay');
+                const hearts = livesEl.querySelectorAll('span:not(.lost)');
+                if (hearts.length > 0) {
+                    const lastHeart = hearts[hearts.length - 1];
+                    lastHeart.classList.add('losing');
+                    setTimeout(() => {
+                        updateLivesDisplay();
+                    }, 400);
+                }
+
+                if (state.lives <= 0) {
+                    setTimeout(() => endGame('lives'), 500);
+                }
+            }
+        }
+
+        function updateLivesDisplay() {
+            const livesEl = document.getElementById('livesDisplay');
+            let html = '';
+            for (let i = 0; i < state.maxLives; i++) {
+                if (i < state.lives) {
+                    html += '<span>❤️</span>';
+                } else {
+                    html += '<span class="lost">❤️</span>';
+                }
+            }
+            livesEl.innerHTML = html;
+        }
+
+        function updateStats() {
+            document.getElementById('scoreDisplay').textContent = state.score;
+            document.getElementById('progressDisplay').textContent = state.levelCorrect;
+            document.getElementById('levelDisplay').textContent = state.gameLevel;
+        }
+
+        function endGame(reason) {
+            state.gameRunning = false;
+            clearInterval(state.gameTimer);
+            clearTimeout(state.statementTimer);
+
+            if (reason === 'failed') {
+                document.getElementById('gameOverIcon').textContent = '😔';
+                document.getElementById('gameOverTitle').textContent = 'Level Failed';
+                document.getElementById('gameOverSubtitle').textContent = `You needed ${state.levelTarget} correct answers`;
+            } else {
+                document.getElementById('gameOverIcon').textContent = '💔';
+                document.getElementById('gameOverTitle').textContent = 'Game Over!';
+                document.getElementById('gameOverSubtitle').textContent = 'You ran out of lives';
+            }
+            
+            playSound('wrong');
+
+            document.getElementById('finalScore').textContent = state.score;
+            document.getElementById('finalCorrect').textContent = state.correct;
+            document.getElementById('finalBestStreak').textContent = state.bestStreak;
+
+            document.getElementById('gameOverOverlay').classList.add('show');
+        }
+
+        function levelComplete() {
+            state.gameRunning = false;
+            clearTimeout(state.statementTimer);
+
+            const accuracy = Math.round((state.levelCorrect / state.statementsPerLevel) * 100);
+
+            if (state.gameLevel >= state.maxGameLevel) {
+                // All levels complete - VICTORY!
+                setTimeout(() => showVictory(), 500);
+            } else {
+                // Level complete - show celebration
+                document.getElementById('levelCompleteIcon').textContent = ['🎉', '🎊', '🥳'][state.gameLevel - 1];
+                document.getElementById('levelCompleteTitle').textContent = `Level ${state.gameLevel} Complete!`;
+                document.getElementById('levelCompleteSubtitle').textContent = getEncouragement(accuracy);
+                document.getElementById('levelScore').textContent = state.score;
+                document.getElementById('levelAccuracy').textContent = accuracy + '%';
+
+                playSound('streak');
+                launchConfetti();
+                
+                document.getElementById('levelCompleteOverlay').classList.add('show');
+            }
+        }
+
+        function showVictory() {
+            document.getElementById('victoryScore').textContent = state.score;
+            document.getElementById('victoryCorrect').textContent = state.correct;
+            document.getElementById('victoryStreak').textContent = state.bestStreak;
+
+            playVictoryMusic();
+            launchConfetti(true); // Extra confetti for victory!
+            
+            document.getElementById('victoryOverlay').classList.add('show');
+        }
+
+        function getEncouragement(accuracy) {
+            if (accuracy >= 90) return 'Perfect! You\'re a genius! 🌟';
+            if (accuracy >= 80) return 'Excellent work! 🎯';
+            if (accuracy >= 70) return 'Great job! Keep it up! 👍';
+            return 'Good effort! Moving on! 💪';
+        }
+
+        // Confetti System
+        function launchConfetti(isVictory = false) {
+            const canvas = document.getElementById('confettiCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const confettiCount = isVictory ? 300 : 150;
+            const confetti = [];
+            const colors = ['#ff6b35', '#4caf50', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
+
+            for (let i = 0; i < confettiCount; i++) {
+                confetti.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    w: Math.random() * 10 + 5,
+                    h: Math.random() * 6 + 4,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    speed: Math.random() * 3 + 2,
+                    angle: Math.random() * Math.PI * 2,
+                    spin: (Math.random() - 0.5) * 0.2,
+                    opacity: 1
+                });
+            }
+
+            let frame = 0;
+            const maxFrames = isVictory ? 300 : 180;
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                confetti.forEach(c => {
+                    c.y += c.speed;
+                    c.x += Math.sin(c.angle) * 2;
+                    c.angle += c.spin;
+                    
+                    if (frame > maxFrames - 60) {
+                        c.opacity = Math.max(0, c.opacity - 0.02);
+                    }
+
+                    ctx.save();
+                    ctx.translate(c.x + c.w / 2, c.y + c.h / 2);
+                    ctx.rotate(c.angle);
+                    ctx.globalAlpha = c.opacity;
+                    ctx.fillStyle = c.color;
+                    ctx.fillRect(-c.w / 2, -c.h / 2, c.w, c.h);
+                    ctx.restore();
+                });
+
+                frame++;
+                if (frame < maxFrames) {
+                    requestAnimationFrame(animate);
+                } else {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                }
+            }
+
+            animate();
+        }
+
+        // Victory Music
+        function playVictoryMusic() {
+            if (!state.soundOn) return;
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            // Victory fanfare melody
+            const melody = [
+                { note: 523, duration: 0.15, time: 0 },      // C
+                { note: 523, duration: 0.15, time: 0.15 },   // C
+                { note: 523, duration: 0.15, time: 0.3 },    // C
+                { note: 523, duration: 0.4, time: 0.45 },    // C (long)
+                { note: 415, duration: 0.4, time: 0.85 },    // Ab
+                { note: 466, duration: 0.4, time: 1.25 },    // Bb
+                { note: 523, duration: 0.2, time: 1.65 },    // C
+                { note: 466, duration: 0.15, time: 1.9 },    // Bb
+                { note: 523, duration: 0.8, time: 2.1 },     // C (long)
+            ];
+
+            melody.forEach(({ note, duration, time }) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                osc.frequency.setValueAtTime(note, audioCtx.currentTime + time);
+                osc.type = 'square';
+                
+                gain.gain.setValueAtTime(0, audioCtx.currentTime + time);
+                gain.gain.linearRampToValueAtTime(0.15, audioCtx.currentTime + time + 0.02);
+                gain.gain.linearRampToValueAtTime(0.1, audioCtx.currentTime + time + duration * 0.8);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + time + duration);
+                
+                osc.start(audioCtx.currentTime + time);
+                osc.stop(audioCtx.currentTime + time + duration);
+            });
+
+            // Add bass notes
+            const bass = [
+                { note: 131, duration: 0.4, time: 0.45 },    // C2
+                { note: 104, duration: 0.4, time: 0.85 },    // Ab1
+                { note: 117, duration: 0.4, time: 1.25 },    // Bb1
+                { note: 131, duration: 1, time: 1.65 },      // C2
+            ];
+
+            bass.forEach(({ note, duration, time }) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                osc.frequency.setValueAtTime(note, audioCtx.currentTime + time);
+                osc.type = 'triangle';
+                
+                gain.gain.setValueAtTime(0, audioCtx.currentTime + time);
+                gain.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime + time + 0.02);
+                gain.gain.linearRampToValueAtTime(0.15, audioCtx.currentTime + time + duration * 0.8);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + time + duration);
+                
+                osc.start(audioCtx.currentTime + time);
+                osc.stop(audioCtx.currentTime + time + duration);
+            });
+        }
+
+        function hideAllOverlays() {
+            document.querySelectorAll('.overlay').forEach(o => o.classList.remove('show'));
+        }
+
+        // Event Listeners
+        document.querySelectorAll('.diff-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (state.gameRunning) return;
+                document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                state.currentLevel = btn.dataset.level;
+                initLevel();
+            });
+        });
+
+        document.getElementById('startBtn').addEventListener('click', startGame);
+        document.getElementById('btnTrue').addEventListener('click', () => handleAnswer(true));
+        document.getElementById('btnFalse').addEventListener('click', () => handleAnswer(false));
+        document.getElementById('playAgainBtn').addEventListener('click', () => {
+            hideAllOverlays();
+            initLevel();
+        });
+        
+        document.getElementById('nextLevelBtn').addEventListener('click', () => {
+            hideAllOverlays();
+            startNextLevel();
+        });
+
+        document.getElementById('victoryRestartBtn').addEventListener('click', () => {
+            hideAllOverlays();
+            initLevel();
+        });
+
+        document.getElementById('soundToggle').addEventListener('click', () => {
+            state.soundOn = !state.soundOn;
+            document.getElementById('soundToggle').textContent = state.soundOn ? '🔊' : '🔇';
+        });
+
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            if (!state.gameRunning) {
+                if (e.code === 'Space' || e.code === 'Enter') {
+                    e.preventDefault();
+                    if (document.getElementById('gameOverOverlay').classList.contains('show')) {
+                        hideAllOverlays();
+                        initLevel();
+                    } else {
+                        startGame();
+                    }
+                }
+                return;
+            }
+
+            if (e.code === 'ArrowLeft' || e.code === 'KeyA') {
+                e.preventDefault();
+                handleAnswer(true);
+            } else if (e.code === 'ArrowRight' || e.code === 'KeyD') {
+                e.preventDefault();
+                handleAnswer(false);
+            }
+        });
+
+        // Initialize
+        loadData().then(() => initLevel());
+    </script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+{
+  "id": "image-quiz-vocabulary",
+  "title": "Vocabulary Image Quiz",
+  
+  "_INSTRUCTIONS": {
+    "note": "Image Quiz - students guess what the image shows as it's revealed tile by tile",
+    "format": "Each item needs: image (URL), answer (main answer), accept (array of accepted answers)",
+    "images": "Use direct image URLs (ending in .jpg, .png, etc). Wikimedia Commons works well.",
+    "accept": "Include variations, translations, or common alternatives the student might type",
+    "tip": "Choose clear, recognizable images. Avoid images with text or multiple subjects.",
+    "difficulty": "The game difficulty comes from tile size (3x3, 4x4, or 6x6), not the images"
+  },
+
+  "images": [
+    {
+      "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Cat03.jpg/320px-Cat03.jpg",
+      "answer": "cat",
+      "accept": ["cat", "gato", "kitty", "kitten"]
+    },
+    {
+      "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/YellowLabradorLooking_new.jpg/320px-YellowLabradorLooking_new.jpg",
+      "answer": "dog",
+      "accept": ["dog", "perro", "puppy", "labrador"]
+    },
+    {
+      "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Sunflower_from_Silesia.jpg/320px-Sunflower_from_Silesia.jpg",
+      "answer": "sunflower",
+      "accept": ["sunflower", "girasol", "flower"]
+    },
+    {
+      "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Camponotus_flavomarginatus_ant.jpg/320px-Camponotus_flavomarginatus_ant.jpg",
+      "answer": "ant",
+      "accept": ["ant", "hormiga", "insect"]
+    },
+    {
+      "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/24701-nature-702-702.jpg/320px-24701-nature-702-702.jpg",
+      "answer": "apple",
+      "accept": ["apple", "manzana", "fruit"]
+    },
+    {
+      "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Banana-Single.jpg/320px-Banana-Single.jpg",
+      "answer": "banana",
+      "accept": ["banana", "plátano", "fruit"]
+    },
+    {
+      "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Felis_silvestris_catus_lying_on_rice_straw.jpg/320px-Felis_silvestris_catus_lying_on_rice_straw.jpg",
+      "answer": "cat",
+      "accept": ["cat", "gato", "kitty"]
+    },
+    {
+      "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Bird_of_prey_in_flight_%28Buteo_jamaicensis%29.jpg/320px-Bird_of_prey_in_flight_%28Buteo_jamaicensis%29.jpg",
+      "answer": "bird",
+      "accept": ["bird", "pájaro", "hawk", "eagle"]
+    },
+    {
+      "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Fish_on_Flickr_-_Photo_Sharing%21.jpg/320px-Fish_on_Flickr_-_Photo_Sharing%21.jpg",
+      "answer": "fish",
+      "accept": ["fish", "pez", "pescado"]
+    },
+    {
+      "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Löwe_Masai_Mara_2.jpg/320px-Löwe_Masai_Mara_2.jpg",
+      "answer": "lion",
+      "accept": ["lion", "león", "leo"]
+    }
+  ]
+}

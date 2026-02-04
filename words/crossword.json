@@ -1,0 +1,46 @@
+{
+  "id": "vocabulary-crossword",
+  "title": "Vocabulary Crossword",
+  
+  "_INSTRUCTIONS": {
+    "note": "This file contains crossword puzzles organized by CEFR difficulty level",
+    "easy": "A1-A2 level: Use common vocabulary (4-7 letters). Clues use basic vocabulary and simple sentences.",
+    "medium": "B1 level: Use intermediate vocabulary. Clues can be more complex but clear.",
+    "hard": "B2-C1 level: Use advanced vocabulary. Clues can be sophisticated.",
+    "important": "Each level MUST have exactly 8 words. Choose words that share common letters (A,E,I,O,R,S,T,N) for better crossword generation.",
+    "tip": "Match the vocabulary in clues to the same CEFR level as the word"
+  },
+
+  "easy": [
+    { "word": "WATER", "clue": "You drink it when you are thirsty" },
+    { "word": "TABLE", "clue": "Furniture you eat dinner on" },
+    { "word": "BREAD", "clue": "Food made from flour for sandwiches" },
+    { "word": "TRAIN", "clue": "Transport on rails" },
+    { "word": "APPLE", "clue": "A round red or green fruit" },
+    { "word": "STORE", "clue": "A shop where you buy things" },
+    { "word": "TIRED", "clue": "How you feel when you need sleep" },
+    { "word": "PLATE", "clue": "You put food on it" }
+  ],
+
+  "medium": [
+    { "word": "WEATHER", "clue": "The conditions outside like rain or sun" },
+    { "word": "TEACHER", "clue": "A person who helps students learn" },
+    { "word": "KITCHEN", "clue": "The room where you cook food" },
+    { "word": "HEALTHY", "clue": "In good physical condition" },
+    { "word": "CHAPTER", "clue": "A section of a book" },
+    { "word": "VARIETY", "clue": "Many different types of something" },
+    { "word": "PATTERN", "clue": "A repeated design or arrangement" },
+    { "word": "THEATER", "clue": "A place to watch plays or movies" }
+  ],
+
+  "hard": [
+    { "word": "ADVENTURE", "clue": "An exciting and unusual experience" },
+    { "word": "DETERMINE", "clue": "To decide or find out something" },
+    { "word": "EDUCATION", "clue": "The process of learning at school" },
+    { "word": "TRANSLATE", "clue": "To change words into another language" },
+    { "word": "CELEBRATE", "clue": "To do something special for an event" },
+    { "word": "ENTERTAIN", "clue": "To amuse or provide enjoyment" },
+    { "word": "REPRESENT", "clue": "To stand for or act on behalf of" },
+    { "word": "ELABORATE", "clue": "Detailed and carefully prepared" }
+  ]
+}
