@@ -1,0 +1,21 @@
+{
+  "id": "english-spanish-basics",
+  "title": "English - Spanish",
+  "pairs": [
+    { "prompt": "Joe", "answer": "Joe" },
+    { "prompt": "Goodbye", "answer": "Adiós" },
+    { "prompt": "Thank you", "answer": "Gracias" },
+    { "prompt": "Please", "answer": "Por favor" },
+    { "prompt": "Yes", "answer": "Sí" },
+    { "prompt": "No", "answer": "No" },
+    { "prompt": "Good morning", "answer": "Buenos días" },
+    { "prompt": "Good night", "answer": "Buenas noches" },
+    { "prompt": "Water", "answer": "Agua" },
+    { "prompt": "Food", "answer": "Comida" },
+    { "prompt": "House", "answer": "Casa" },
+    { "prompt": "Dog", "answer": "Perro" },
+    { "prompt": "Cat", "answer": "Gato" },
+    { "prompt": "Book", "answer": "Libro" },
+    { "prompt": "School", "answer": "Escuela" }
+  ]
+}

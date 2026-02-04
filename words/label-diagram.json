@@ -1,0 +1,14 @@
+{
+  "title": "Body Parts",
+  "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Human_body_features_en.svg/500px-Human_body_features_en.svg.png",
+  "hotspots": [
+    { "label": "Head", "x": 50, "y": 8 },
+    { "label": "Shoulder", "x": 32, "y": 22 },
+    { "label": "Chest", "x": 50, "y": 28 },
+    { "label": "Arm", "x": 22, "y": 38 },
+    { "label": "Hand", "x": 18, "y": 55 },
+    { "label": "Leg", "x": 40, "y": 70 },
+    { "label": "Knee", "x": 42, "y": 78 },
+    { "label": "Foot", "x": 42, "y": 95 }
+  ]
+}

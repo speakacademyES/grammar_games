@@ -1,0 +1,18 @@
+{
+  "id": "basic-phrases",
+  "title": "Basic Phrases (EN → ES)",
+  "pairs": [
+    { "prompt": "Hello", "answer": "Hola" },
+    { "prompt": "Goodbye", "answer": "Adiós" },
+    { "prompt": "Thank you", "answer": "Gracias" },
+    { "prompt": "Please", "answer": "Por favor" },
+    { "prompt": "Yes", "answer": "Sí" },
+    { "prompt": "No", "answer": "No" },
+    { "prompt": "Good morning", "answer": "Buenos días" },
+    { "prompt": "Good afternoon", "answer": "Buenas tardes" },
+    { "prompt": "Good night", "answer": "Buenas noches" },
+    { "prompt": "How are you?", "answer": "¿Cómo estás?" },
+    { "prompt": "I'm fine", "answer": "Estoy bien" },
+    { "prompt": "What's your name?", "answer": "¿Cómo te llamas?" }
+  ]
+}

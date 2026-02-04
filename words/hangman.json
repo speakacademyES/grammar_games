@@ -1,0 +1,16 @@
+{
+  "id": "animals-and-nature",
+  "title": "Animals & Nature",
+  "words": [
+    { "word": "elephant", "hint": "A large gray animal with a trunk" },
+    { "word": "butterfly", "hint": "A colorful flying insect" },
+    { "word": "penguin", "hint": "A black and white bird that can't fly" },
+    { "word": "dolphin", "hint": "A friendly sea mammal" },
+    { "word": "giraffe", "hint": "The tallest animal with a long neck" },
+    { "word": "rainbow", "hint": "Colorful arc in the sky after rain" },
+    { "word": "sunshine", "hint": "Light and warmth from the sun" },
+    { "word": "mountain", "hint": "A very high landform" },
+    { "word": "waterfall", "hint": "Water flowing over a cliff" },
+    { "word": "volcano", "hint": "A mountain that can erupt" }
+  ]
+}

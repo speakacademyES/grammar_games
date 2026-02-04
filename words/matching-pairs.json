@@ -1,0 +1,22 @@
+{
+  "id": "basic-vocabulary",
+  "title": "Basic Vocabulary (EN-ES)",
+  "pairs": [
+    { "english": "House", "spanish": "Casa" },
+    { "english": "Dog", "spanish": "Perro" },
+    { "english": "Cat", "spanish": "Gato" },
+    { "english": "Water", "spanish": "Agua" },
+    { "english": "Food", "spanish": "Comida" },
+    { "english": "Book", "spanish": "Libro" },
+    { "english": "School", "spanish": "Escuela" },
+    { "english": "Friend", "spanish": "Amigo" },
+    { "english": "Family", "spanish": "Familia" },
+    { "english": "Time", "spanish": "Tiempo" },
+    { "english": "Day", "spanish": "Día" },
+    { "english": "Night", "spanish": "Noche" },
+    { "english": "Sun", "spanish": "Sol" },
+    { "english": "Moon", "spanish": "Luna" },
+    { "english": "Tree", "spanish": "Árbol" },
+    { "english": "Flower", "spanish": "Flor" }
+  ]
+}

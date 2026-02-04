@@ -1,0 +1,18 @@
+{
+  "id": "food-categories",
+  "title": "Food Categories",
+  "groups": [
+    {
+      "name": "Fruits",
+      "items": ["Apple", "Banana", "Orange", "Grape", "Strawberry"]
+    },
+    {
+      "name": "Vegetables",
+      "items": ["Carrot", "Broccoli", "Potato", "Onion", "Cucumber"]
+    },
+    {
+      "name": "Dairy",
+      "items": ["Milk", "Cheese", "Yogurt", "Butter", "Cream"]
+    }
+  ]
+}

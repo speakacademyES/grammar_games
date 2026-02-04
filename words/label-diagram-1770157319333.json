@@ -1,0 +1,21 @@
+{
+  "title": "House",
+  "image": "images/Gemini_Generated_Image_vaknarvaknarvakn.png",
+  "hotspots": [
+    {
+      "label": "Window",
+      "x": 76.7,
+      "y": 33.2
+    },
+    {
+      "label": "Market",
+      "x": 18.2,
+      "y": 68.1
+    },
+    {
+      "label": "Trees",
+      "x": 18.4,
+      "y": 26.4
+    }
+  ]
+}
